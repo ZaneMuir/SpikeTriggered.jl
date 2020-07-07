@@ -1,5 +1,3 @@
-import taroSDMS.get_entries
-
 struct SparseNoise{T <: Integer} <: StimulusEnsemble
     snra::Vector{T} # s x t
     gridSize::Int64

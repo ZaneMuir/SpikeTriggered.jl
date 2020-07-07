@@ -1,5 +1,6 @@
 module SpikeTriggered
 
+import SDMS.get_entries
 import SparseArrays: sparse, spzeros, dropzeros
 
 include("utils.jl")
