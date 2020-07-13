@@ -31,13 +31,15 @@ Base.getindex(gnd::GaussianNoise, i::Integer) = begin
         gnd.Converter.(V)
     end
 
-    Base.getindex(gnd::GaussianNoise, I) = begin
-        Vs = zeros(size(gnd, 1), length(I))
-        for (iidx, idx) in enumerate(I)
-            Vs[:, iidx] = gnd[idx]
-        end
-        Vs
+Base.getindex(gnd::GaussianNoise, I) = begin
+    Vs = zeros(size(gnd, 1), length(I))
+    for (iidx, idx) in enumerate(I)
+        Vs[:, iidx] = gnd[idx]
     end
+    Vs
+end
 
-    Base.firstindex(gnd::GaussianNoise) = 1
-    Base.lastindex(gnd::GaussianNoise) = length(gnd)
+Base.firstindex(gnd::GaussianNoise) = 1
+Base.lastindex(gnd::GaussianNoise) = length(gnd)
+
+Base.:*(gnd::GaussianNoise, bspk::Vector{T}) where {T} = gnd[1:end] * bspk
