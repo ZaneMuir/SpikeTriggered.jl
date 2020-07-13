@@ -2,6 +2,9 @@ module SpikeTriggered
 
 import SDMS.get_entries
 import SparseArrays: sparse, spzeros, dropzeros
+import DSP: conv
+include(joinpath(@__DIR__, "../deps/FastConv/FastConv.jl"))
+convn = FastConv.convn
 
 include("utils.jl")
 include("Stimulus/Stimulus.jl")
