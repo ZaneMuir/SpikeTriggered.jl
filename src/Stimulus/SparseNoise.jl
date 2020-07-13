@@ -39,14 +39,14 @@ Base.getindex(snd::SparseNoise, i::Integer) = begin
     if i < snd.temporalLength
         d = _legacy_parse_snf_array(snd.snra[1:i], snd.gridSize)
 
-        I = d.row .+ (d.col .- 1) .* snd.gridSize .+ snd.gridSize * snd.gridSize .* ((10-i):9)
+        I = d.row .+ (d.col .- 1) .* snd.gridSize .+ snd.gridSize * snd.gridSize .* ((snd.temporalLength-i):(snd.temporalLength-1))
         J = ones(eltype(snd.snra), i);
         V = d.sign
     else
-        d = _legacy_parse_snf_array(snd.snra[i-9:i], snd.gridSize)
+        d = _legacy_parse_snf_array(snd.snra[i-snd.temporalLength+1:i], snd.gridSize)
 
-        I = d.row .+ (d.col .- 1) .* snd.gridSize .+ snd.gridSize * snd.gridSize .* (0:9)
-        J = ones(eltype(snd.snra), 10);
+        I = d.row .+ (d.col .- 1) .* snd.gridSize .+ snd.gridSize * snd.gridSize .* (0:(snd.temporalLength-1))
+        J = ones(eltype(snd.snra), snd.temporalLength);
         V = d.sign
     end
 
@@ -66,12 +66,12 @@ Base.getindex(snd::SparseNoise, I) = begin
             M[1:end-idx, iidx] = snd.snra[end+idx-snd.temporalLength+1:end]
             M[end-idx+1:end, iidx] = snd.snra[1:idx]
         else
-            M[:, iidx] = snd.snra[idx-9:idx]
+            M[:, iidx] = snd.snra[idx-snd.temporalLength+1:idx]
         end
     end
 
     d = _legacy_parse_snf_array(M, snd.gridSize)
-    sI = d.row .+ (d.col .- 1) .* snd.gridSize .+ snd.gridSize * snd.gridSize .* (0:9)
+    sI = d.row .+ (d.col .- 1) .* snd.gridSize .+ snd.gridSize * snd.gridSize .* (0:(snd.temporalLength-1))
     sJ = ones(size(M)) .* (1:length(I))'
     sV = d.sign
 
