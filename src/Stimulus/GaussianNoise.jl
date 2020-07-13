@@ -1,34 +1,34 @@
 char2luminance(x; dtype::Type=Float64) = dtype(x / 255 * 2 - 1)
 
 struct GaussianNoise{Tv <: Real} <: StimulusEnsemble
-    Video::Array{Tv, 3}
-    TemporalLength::Int
-    TemporalResolution::Float64
-    Converter::Function
+    video::Array{Tv, 3}
+    temporalLength::Int
+    temporalResolution::Float64
+    converter::Function
 
-    GaussianNoise(video::Array{T, 3}, t_len::Int; t_res=1/35, converter::Function=char2luminance) where {T} = begin
+    GaussianNoise(video::Array{T, 3}; t_len::Int, t_res=1/35, converter::Function=char2luminance) where {T} = begin
         new{T}(video, t_len, t_res, converter)
     end
 end
 
-Base.show(io::IO, gnd::GaussianNoise) = print(io, "gaussian noise design - size: $(size(gnd.Video)), t_len: $(gnd.TemporalLength)")
+Base.show(io::IO, gnd::GaussianNoise) = print(io, "gaussian noise design - size: $(size(gnd.video)), t_len: $(gnd.temporalLength)")
 
-Base.size(gnd::GaussianNoise) = (size(gnd.Video, 1) * size(gnd.Video, 2) * gnd.TemporalLength, size(gnd.Video, 3))
+Base.size(gnd::GaussianNoise) = (size(gnd.video, 1) * size(gnd.video, 2) * gnd.temporalLength, size(gnd.video, 3))
 Base.size(gnd::GaussianNoise, dim::Integer) = dim > 2 ? 1 : size(gnd)[dim]
-Base.length(gnd::GaussianNoise) = size(gnd.Video, 3)
+Base.length(gnd::GaussianNoise) = size(gnd.video, 3)
 
 Base.getindex(gnd::GaussianNoise, i::Integer) = begin
     #     frame = zeros(size(gnd, 1))
-        if i < gnd.TemporalLength
+        if i < gnd.temporalLength
             V = zeros(size(gnd, 1))
-            _step = size(gnd.Video, 1) * size(gnd.Video, 2)
-            V[1:_step*(gnd.TemporalLength - i)] = gnd.Video[:,:,end-gnd.TemporalLength+i+1:end][:]
-            V[_step*(gnd.TemporalLength - i)+1:end] = gnd.Video[:,:,1:i][:]
+            _step = size(gnd.video, 1) * size(gnd.video, 2)
+            V[1:_step*(gnd.temporalLength - i)] = gnd.video[:,:,end-gnd.temporalLength+i+1:end][:]
+            V[_step*(gnd.temporalLength - i)+1:end] = gnd.video[:,:,1:i][:]
         else
-            T = (i-gnd.TemporalLength+1):i
-            V = gnd.Video[:,:,T][:]
+            T = (i-gnd.temporalLength+1):i
+            V = gnd.video[:,:,T][:]
         end
-        gnd.Converter.(V)
+        gnd.converter.(V)
     end
 
 Base.getindex(gnd::GaussianNoise, I) = begin
