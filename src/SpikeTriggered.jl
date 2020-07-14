@@ -1,6 +1,7 @@
 module SpikeTriggered
 
 import SDMS.get_entries
+import Mongoc
 import SparseArrays: sparse, spzeros, dropzeros
 import DSP: conv
 include(joinpath(@__DIR__, "../deps/FastConv/FastConv.jl"))
