@@ -18,8 +18,15 @@ struct SparseNoise{T <: Integer} <: StimulusEnsemble
     end
 
     SparseNoise(mdb, fname::String; kwargs...) = begin
-        d = get_entries(mdb["inventory"]["attachments"], """{"filename": "$(fname)"}""", limit=1)[1]
-        SparseNoise(Int64.(d["data"]["snra"]); kwargs...)
+
+        filename = splitext(fname)[1] * ".snf"
+        raw = Mongoc.open_download_stream(Mongoc.Bucket(mdb["attachments"]), filename) do mio
+            read(mio)
+        end
+        meta = Mongoc.find_one(mdb["attachments"]["fs.files"], Mongoc.BSON("filename" => filename),
+            options=Mongoc.BSON("projection"=>Dict("metadata" => 1)))["metadata"]
+        dtype = Int16 #TODO: use value in meta
+        SparseNoise(reinterpret(dtype, raw); kwargs...)
     end
 end
 
