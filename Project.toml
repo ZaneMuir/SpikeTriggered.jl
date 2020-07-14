@@ -4,5 +4,6 @@ authors = ["Yizhan Miao <yzmiao@pm.me>"]
 version = "0.1.4"
 
 [deps]
+DSP = "717857b8-e6f2-59f4-9121-6e50c889abd2"
 SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 SDMS = "d0ac49df-e14a-4fbd-9c4a-cc834280f2a8"
