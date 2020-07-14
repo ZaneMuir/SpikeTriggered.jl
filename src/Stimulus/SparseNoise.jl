@@ -26,7 +26,7 @@ struct SparseNoise{T <: Integer} <: StimulusEnsemble
         meta = Mongoc.find_one(mdb["attachments"]["fs.files"], Mongoc.BSON("filename" => filename),
             options=Mongoc.BSON("projection"=>Dict("metadata" => 1)))["metadata"]
         dtype = Int16 #TODO: use value in meta
-        SparseNoise(reinterpret(dtype, raw); kwargs...)
+        SparseNoise(collect(reinterpret(dtype, raw)); kwargs...)
     end
 end
 
