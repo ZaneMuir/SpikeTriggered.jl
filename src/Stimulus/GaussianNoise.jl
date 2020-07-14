@@ -6,8 +6,17 @@ struct GaussianNoise{Tv <: Real} <: StimulusEnsemble
     temporalResolution::Float64
     converter::Function
 
-    GaussianNoise(video::Array{T, 3}; t_len::Int, t_res=1/35, converter::Function=char2luminance) where {T} = begin
+    GaussianNoise(video::Array{T, 3}; t_len::Int=10, t_res=1/35, converter::Function=char2luminance) where {T} = begin
         new{T}(video, t_len, t_res, converter)
+    end
+
+    GaussianNoise(mdb, fname; kwargs...) = begin
+        raw = Mongoc.open_download_stream(Mongoc.Bucket(mdb["attachments"]), fname) do mio
+            read(mio)
+        end
+        meta = Mongoc.find_one(mdb["attachments"]["fs.files"], Mongoc.BSON("filename" => fname))["metadata"]
+
+        GaussianNoise(reshape(raw, Int64(meta["width"]), Int64(meta["height"]), Int64(meta["tlen"])); kwargs...)
     end
 end
 
