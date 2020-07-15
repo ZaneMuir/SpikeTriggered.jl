@@ -3,6 +3,7 @@ module SpikeTriggered
 import SDMS.get_entries
 import Mongoc
 import SparseArrays: sparse, spzeros, dropzeros
+import LinearAlgebra: eigvals, eigvecs
 import DSP: conv
 include(joinpath(@__DIR__, "../deps/FastConv/FastConv.jl"))
 convn = FastConv.convn
@@ -35,6 +36,15 @@ function STA(X, bspks::Array{T, 2}; kwargs...) where {T <: Real}
     end
 
     sum(result, dims=2)[:] ./ sum(bspks)
+end
+
+#NOTE: this function could change very dramatically
+#TODO: optimize and make the results more useful
+function STC(X::Array{Tx, 2}, spks::Vector{Ts}) where {Tx, Ts}
+    _sta = STA(X, spks)
+    ss = X .- _sta
+    C_hat = ss * transpose(ss) ./ (size(X, 2) - 1);
+    return (eigvals(C_hat), eigvecs(C_hat))
 end
 
 end # module
