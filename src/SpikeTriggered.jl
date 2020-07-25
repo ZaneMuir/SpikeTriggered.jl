@@ -5,37 +5,29 @@ import Mongoc
 import SparseArrays: sparse, spzeros, dropzeros
 import LinearAlgebra: eigvals, eigvecs
 import DSP: conv
+import GSL
 include(joinpath(@__DIR__, "../deps/FastConv/FastConv.jl"))
 convn = FastConv.convn
 
 include("utils.jl")
 include("Stimulus/Stimulus.jl")
 
-function STA(se::T, bspk::Vector{U}; flatten=false) where {T <: StimulusEnsemble, U <: Real}
-    if flatten
-        reshape(se * bspk ./ sum(bspk), se.gridSize, se.gridSize, se.temporalLength)
-    else
-        se * bspk ./ sum(bspk)
+@doc raw"""
+    STA(X, spk::Array{T, N}) where {T <: Real, N} -> Vector{T}
+
+get the spike triggered average.
+"""
+function STA(X, spk::Array{T, N}) where {T <: Real, N}
+    if N == 1
+        return X * spk ./ sum(spk)
+    elseif N == 2
+        (xsize, xlen) = size(X)
+        output = zeros(xsize)
+        @inbounds for idx in 1:N
+            output += X * spk[1:xlen, idx]
+        end
+        return output ./ sum(spk)
     end
-end
-
-function STA(X::Array{T, 2}, bspk::Vector{U}; grid_size=16, flatten=false) where {T <: Real, U <: Real}
-    if flatten
-        reshape(X * bspk ./ sum(bspk), grid_size, grid_size, :)
-    else
-        X * bspk ./ sum(bspk)
-    end
-end
-
-function STA(X, bspks::Array{T, 2}; kwargs...) where {T <: Real}
-    n = size(bspks, 2)
-    result = zeros(size(X, 1), n)
-
-    for idx in 1:n
-        result[:, idx] = STA(X, bspks[:, idx]; flatten=true, kwargs...)[:] .* sum(bspks[:, idx])
-    end
-
-    sum(result, dims=2)[:] ./ sum(bspks)
 end
 
 #NOTE: this function could change very dramatically
