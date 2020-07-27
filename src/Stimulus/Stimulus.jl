@@ -23,3 +23,4 @@ function equal_division(ids::Vector{T}, size::Integer; total=512) where {T <: In
     end
 
     return (_train_idx, _test_idx)
+end
