@@ -2,6 +2,7 @@ abstract type StimulusEnsemble end
 
 include("SparseNoise.jl")
 include("GaussianNoise.jl")
+import Random.randperm
 
 function equal_division(ids::Vector{T}, size::Integer; total=512) where {T <: Integer}
     _train_idx = zeros(Int, length(ids) - total * size)
