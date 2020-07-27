@@ -21,10 +21,10 @@ function STA(X, spk::Array{T, N}) where {T <: Real, N}
     if N == 1
         return X * spk ./ sum(spk)
     elseif N == 2
-        (xsize, xlen) = size(X)
+        (xsize, tlen) = size(X)
         output = zeros(xsize)
-        @inbounds for idx in 1:N
-            output += X * spk[1:xlen, idx]
+        @inbounds for idx in 1:size(spk, 2)
+            output += X * spk[1:tlen, idx]
         end
         return output ./ sum(spk)
     end
