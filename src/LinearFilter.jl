@@ -21,9 +21,9 @@ function filter_gaussian(bpsth::Array{T, N}; H=15, sigma=5) where {T, N}
     kernel = kernel_gaussian(H, sigma)
     output = zeros(T, size(bpsth))
     if N == 1
-        output[:] = convn(bpsth, kernel)[H+1:end-H][:]
+        output[:] = conv(bpsth, kernel)[H+1:end-H][:] #TODO: use fastconv.convn(::Array{T, N}, ::Array{T, N})
     elseif N == 2
-        output[:] = convn(bpsth, kernel)[H+1:end-H, :][:]
+        output[:] = conv(bpsth, kernel)[H+1:end-H, :][:]
     else
         throw(ArgumentError("bpsth must be 1d or 2d array"))
     end
