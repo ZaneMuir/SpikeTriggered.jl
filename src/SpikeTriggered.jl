@@ -10,6 +10,7 @@ include(joinpath(@__DIR__, "../deps/FastConv/FastConv.jl"))
 convn = FastConv.convn
 
 include("utils.jl")
+include("LinearFilter.jl")
 include("Stimulus/Stimulus.jl")
 
 @doc raw"""
