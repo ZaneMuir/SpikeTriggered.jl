@@ -6,6 +6,7 @@ import SparseArrays: sparse, spzeros, dropzeros
 import LinearAlgebra: eigvals, eigvecs
 import DSP: conv
 import GSL
+import Random.randperm
 include(joinpath(@__DIR__, "../deps/FastConv/FastConv.jl"))
 convn = FastConv.convn
 

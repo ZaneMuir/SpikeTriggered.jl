@@ -101,3 +101,32 @@ function gsl_histogram(u_arr::Vector{T}, edges::Vector{T}; asSparse::Bool=false,
 
     asSparse ? sparse(myhist) : myhist
 end
+
+@doc raw"""
+    equal_division(ids::Vector{T}, s) where {T} -> (_train_idx, _test_idx)
+
+equal divide the given `ids`, and return the corresponding indices.
+"""
+function equal_division(ids::Vector{T}, s) where {T}
+    ids_set = unique(ids) |> sort
+    ids_n = length(ids_set)
+
+    _train_idx = zeros(Int, length(ids) - ids_n * s)
+    _test_idx = zeros(Int, ids_n * s)
+
+    n_train = 0
+    n_test = 0
+
+    for idx in 1:ids_n
+        _candidates = findall(ids .== ids_set[idx])
+        rand_queue = randperm(length(_candidates))
+
+        _train_idx[n_train+1:n_train+length(rand_queue)-s] = _candidates[rand_queue[s+1:end]]
+        _test_idx[n_test+1:n_test+s] = _candidates[rand_queue[1:s]]
+
+        n_train += length(rand_queue) - s
+        n_test += s
+    end
+
+    return (_train_idx, _test_idx)
+end
