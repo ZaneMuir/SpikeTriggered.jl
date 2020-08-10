@@ -7,14 +7,15 @@ struct SparseNoise{T <: Integer} <: StimulusEnsemble
     multiplication::Int64 #NOTE: so far not used
     kernel::Array
     atol::Float64
+    interpolate::Bool #NOTE: if true, use kernel to keep the size equal to gridSize, otherwise the actual size would be 2*gridSize
 
-    SparseNoise(snra::Vector{T}; grid_size=16, t_len=10, t_res=1/35, bgc=1, m=1, atol=1e-8) where {T <: Integer} = begin
+    SparseNoise(snra::Vector{T}; grid_size=16, t_len=10, t_res=1/35, bgc=1, m=1, atol=1e-8, interpolate=false) where {T <: Integer} = begin
 
         _k = zeros(2*(m+1-m%2), 2*(m+1-m%2))
         _k[2-m%2:end-1+m%2, 2-m%2:end-1+m%2] .= 1
         _kernel = conv(_k, ones(2, 2)/4)[2:2:end, 2:2:end]
 
-        new{T}(snra, grid_size, t_len, t_res, bgc, m, _kernel, atol)
+        new{T}(snra, grid_size, t_len, t_res, bgc, m, _kernel, atol, interpolate)
     end
 
     SparseNoise(mdb, fname::String; kwargs...) = begin
@@ -50,6 +51,25 @@ Base.size(snd::SparseNoise, dim::Integer) = dim > 2 ? 1 : size(snd)[dim]
 Base.length(snd::SparseNoise) = length(snd.snra)
 
 Base.getindex(snd::SparseNoise, i::Integer) = begin
+    if snd.interpolate
+        _l = max(1, i-snd.temporalLength+1)
+        d = _legacy_parse_snf_array(snd.snra[_l:i], snd.gridSize)
+
+        stim = spzeros(Int16, snd.gridSize*2*snd.gridSize*2*snd.temporalLength)
+        _frame_len = snd.gridSize*2*snd.gridSize*2
+
+        for idx in 1:length(d.ids)
+            _tmp = spzeros(Int16, snd.gridSize*2, snd.gridSize*2)
+            _r_left = max(1, d.row[idx]*2-snd.multiplication)
+            _r_right = min(snd.gridSize*2, d.row[idx]*2+snd.multiplication-1)
+            _c_upper = max(1, d.col[idx]*2-snd.multiplication)
+            _c_lower = min(snd.gridSize*2, d.col[idx]*2+snd.multiplication-1)
+            _tmp[_r_left:_r_right, _c_upper:_c_lower] .= d.sign[idx]
+            stim[(snd.temporalLength-idx)*_frame_len+1:(snd.temporalLength-idx+1)*_frame_len] .= _tmp[:]
+        end
+        return stim
+    end
+
     if snd.multiplication == 1
         if i < snd.temporalLength
             d = _legacy_parse_snf_array(snd.snra[1:i], snd.gridSize)
@@ -110,6 +130,26 @@ Base.getindex(snd::SparseNoise, I) = begin
         else
             M[:, iidx] = snd.snra[idx-snd.temporalLength+1:idx]
         end
+    end
+
+    if snd.interpolate
+        stim = spzeros(Int16, snd.gridSize*2*snd.gridSize*2*snd.temporalLength, length(I))
+        _frame_len = snd.gridSize*2*snd.gridSize*2
+        for jdx in 1:length(I)
+            d = _legacy_parse_snf_array(M[:, jdx], snd.gridSize)
+
+            for idx in 1:length(d.ids)
+                _tmp = spzeros(Int16, snd.gridSize*2, snd.gridSize*2)
+                _r_left = max(1, d.row[idx]*2-snd.multiplication)
+                _r_right = min(snd.gridSize*2, d.row[idx]*2+snd.multiplication-1)
+                _c_upper = max(1, d.col[idx]*2-snd.multiplication)
+                _c_lower = min(snd.gridSize*2, d.col[idx]*2+snd.multiplication-1)
+                _tmp[_r_left:_r_right, _c_upper:_c_lower] .= d.sign[idx]
+                stim[(snd.temporalLength-idx)*_frame_len+1:(snd.temporalLength-idx+1)*_frame_len, jdx] .= _tmp[:]
+            end
+        end
+
+        return stim
     end
 
     if snd.multiplication == 1
