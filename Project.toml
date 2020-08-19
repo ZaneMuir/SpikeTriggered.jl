@@ -1,7 +1,7 @@
 name = "SpikeTriggered"
 uuid = "3c99cc20-eaca-4e17-bd25-d7dac35e9bca"
 authors = ["Yizhan Miao <yzmiao@pm.me>"]
-version = "0.3.3"
+version = "0.3.4"
 
 [deps]
 DSP = "717857b8-e6f2-59f4-9121-6e50c889abd2"
