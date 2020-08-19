@@ -60,7 +60,7 @@ Base.getindex(snd::SparseNoise, i::Integer) = begin
         _frame_len = snd.gridSize*2*snd.gridSize*2
         _n = length(d.ids)
 
-        for idx in 1:length(d.ids)
+        @inbounds for idx in 1:length(d.ids)
             _tmp = spzeros(Int16, snd.gridSize*2, snd.gridSize*2)
             _r_left = max(1, d.row[idx]*2-snd.multiplication)
             _r_right = min(snd.gridSize*2, d.row[idx]*2+snd.multiplication-1)
@@ -68,7 +68,6 @@ Base.getindex(snd::SparseNoise, i::Integer) = begin
             _c_lower = min(snd.gridSize*2, d.col[idx]*2+snd.multiplication-1)
             _tmp[_r_left:_r_right, _c_upper:_c_lower] .= d.sign[idx]
             stim[(snd.temporalLength-_n+idx-1)*_frame_len+1:(snd.temporalLength-_n+idx)*_frame_len] = _tmp[:]
-            # stim[(snd.temporalLength-idx)*_frame_len+1:(snd.temporalLength-idx+1)*_frame_len] .= _tmp[:]  #FIXME: wrong order
         end
         return stim
     end
@@ -139,18 +138,19 @@ Base.getindex(snd::SparseNoise, I) = begin
         stim = spzeros(Int16, snd.gridSize*2*snd.gridSize*2*snd.temporalLength, length(I))
         _frame_len = snd.gridSize*2*snd.gridSize*2
         for jdx in 1:length(I)
-            d = _legacy_parse_snf_array(M[:, jdx], snd.gridSize)
-            _n = length(d.ids)
-            for idx in 1:length(d.ids)
-                _tmp = spzeros(Int16, snd.gridSize*2, snd.gridSize*2)
-                _r_left = max(1, d.row[idx]*2-snd.multiplication)
-                _r_right = min(snd.gridSize*2, d.row[idx]*2+snd.multiplication-1)
-                _c_upper = max(1, d.col[idx]*2-snd.multiplication)
-                _c_lower = min(snd.gridSize*2, d.col[idx]*2+snd.multiplication-1)
-                _tmp[_r_left:_r_right, _c_upper:_c_lower] .= d.sign[idx]
-                # stim[(snd.temporalLength-idx)*_frame_len+1:(snd.temporalLength-idx+1)*_frame_len, jdx] .= _tmp[:]  #FIXME:
-                stim[(snd.temporalLength-_n+idx-1)*_frame_len+1:(snd.temporalLength-_n+idx)*_frame_len, jdx] = _tmp[:]
-            end
+            #FIXME: super slow??
+            # d = _legacy_parse_snf_array(M[:, jdx], snd.gridSize)
+            # #_n = length(d.ids)
+            # for idx in 1:length(d.ids)
+            #     _tmp = spzeros(Int16, snd.gridSize*2, snd.gridSize*2)
+            #     _r_left = max(1, d.row[idx]*2-snd.multiplication)
+            #     _r_right = min(snd.gridSize*2, d.row[idx]*2+snd.multiplication-1)
+            #     _c_upper = max(1, d.col[idx]*2-snd.multiplication)
+            #     _c_lower = min(snd.gridSize*2, d.col[idx]*2+snd.multiplication-1)
+            #     @inbounds _tmp[_r_left:_r_right, _c_upper:_c_lower] .= d.sign[idx]
+            #     @inbounds stim[(snd.temporalLength-length(d.ids)+idx-1)*_frame_len+1:(snd.temporalLength-length(d.ids)+idx)*_frame_len, jdx] = view(_tmp, :)
+            # end
+            @inbounds stim[:, jdx] .= snd[I[jdx]]
         end
 
         return stim
