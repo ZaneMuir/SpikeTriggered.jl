@@ -16,8 +16,25 @@ struct GaussianNoise{Tv <: Real} <: StimulusEnsemble
         end
         meta = Mongoc.find_one(mdb["attachments"]["fs.files"], Mongoc.BSON("filename" => fname))["metadata"]
 
-        GaussianNoise(reshape(raw, Int64(meta["width"]), Int64(meta["height"]), Int64(meta["tlen"])); kwargs...)
+        GaussianNoise(reshape(raw, Int64(meta["width"]), Int64(meta["height"]), Int64(meta["length"])); kwargs...)
     end
+end
+
+# rendering the GN video as dense matrix
+Base.collect(gnd::GaussianNoise; tlen::Union{Nothing, Integer}=nothing, repeats::Integer=1) = begin
+    if isnothing(tlen)
+        video = zeros(size(gnd) .* (1, repeats))
+        tlen = size(gnd, 2)
+    else
+        video = zeros(size(gnd, 1), tlen * repeats)
+    end
+
+    _tmp = gnd[1:tlen]
+    for idx in 1:repeats
+        video[:, (idx-1)*tlen+1:tlen*idx] .= _tmp
+    end
+
+    video
 end
 
 Base.show(io::IO, gnd::GaussianNoise) = print(io, "gaussian noise design - size: $(size(gnd.video)), t_len: $(gnd.temporalLength)")
@@ -51,4 +68,5 @@ end
 Base.firstindex(gnd::GaussianNoise) = 1
 Base.lastindex(gnd::GaussianNoise) = length(gnd)
 
+# deprecated
 Base.:*(gnd::GaussianNoise, bspk::Vector{T}) where {T} = gnd[1:end] * bspk
