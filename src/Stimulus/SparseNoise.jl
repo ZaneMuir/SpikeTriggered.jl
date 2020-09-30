@@ -1,4 +1,5 @@
 struct SparseNoise{T <: Integer} <: StimulusEnsemble
+    ids::Vector{Int64}
     snra::Vector{T} # s x t
     gridSize::Int64
     temporalLength::Int64
@@ -11,11 +12,12 @@ struct SparseNoise{T <: Integer} <: StimulusEnsemble
 
     SparseNoise(snra::Vector{T}; grid_size=16, t_len=10, t_res=1/35, bgc=1, m=1, atol=1e-8, interpolate=false) where {T <: Integer} = begin
 
+        sn_info = _legacy_parse_snf_array(snra, grid_size)
         _k = zeros(2*(m+1-m%2), 2*(m+1-m%2))
         _k[2-m%2:end-1+m%2, 2-m%2:end-1+m%2] .= 1
         _kernel = conv(_k, ones(2, 2)/4)[2:2:end, 2:2:end]
 
-        new{T}(snra, grid_size, t_len, t_res, bgc, m, _kernel, atol, interpolate)
+        new{T}(sn_info.ids, snra, grid_size, t_len, t_res, bgc, m, _kernel, atol, interpolate)
     end
 
     SparseNoise(mdb, fname::String; kwargs...) = begin
