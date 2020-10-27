@@ -19,7 +19,19 @@ include("Stimulus/Stimulus.jl")
 
 get the spike triggered average.
 """
-function STA(X, spk::Array{T, N}) where {T <: Real, N}
+function STA(X, y::Array{T}; n=10) where {T <: Real}
+    ȳ = mean(y, dims=2)
+    denom = sum(ȳ)
+    (N, m) = size(X)
+    output = zeros(m, n)
+    for tidx in 1:n
+        @inbounds output[:, tidx] .= view(ȳ' * circshift(X, tidx - 1) ./ denom, :)
+    end
+
+    output[:]
+end
+
+function STA_ensemble(X, spk::Array{T, N}) where {T <: Real, N}
     if N == 1
         return X * spk ./ sum(spk)
     elseif N == 2
@@ -32,13 +44,12 @@ function STA(X, spk::Array{T, N}) where {T <: Real, N}
     end
 end
 
-#NOTE: this function could change very dramatically
-#TODO: optimize and make the results more useful
-function STC(X::Array{Tx, 2}, spks::Vector{Ts}) where {Tx, Ts}
-    _sta = STA(X, spks)
-    ss = X .- _sta
-    C_hat = ss * transpose(ss) ./ (size(X, 2) - 1);
-    return (eigvals(C_hat), eigvecs(C_hat))
-end
+# #TODO: STC
+# function STC(X::Array{Tx, 2}, spks::Vector{Ts}) where {Tx, Ts}
+#     _sta = STA(X, spks)
+#     ss = X .- _sta
+#     C_hat = ss * transpose(ss) ./ (size(X, 2) - 1);
+#     return (eigvals(C_hat), eigvecs(C_hat))
+# end
 
 end # module

@@ -70,3 +70,8 @@ Base.lastindex(gnd::GaussianNoise) = length(gnd)
 
 # deprecated
 Base.:*(gnd::GaussianNoise, bspk::Vector{T}) where {T} = gnd[1:end] * bspk
+
+#NOTE: for LNPModel v3.0 and above
+Base.collect(gn::GaussianNoise) = begin
+    collect(reshape(gn.converter.(gn.video), :, size(gn.video, 3))')
+end
