@@ -212,7 +212,7 @@ Base.collect(sn::SparseNoise; isdense=true) = begin
     sn_info = _legacy_parse_snf_array(sn.snra, sn.gridSize)
     N = length(sn.snra)
     m = sn.gridSize * sn.gridSize
-    output = SparseArrays.sparse(1:N, (sn_info.col .- 1) .* sn.gridSize .+ sn_info.row, sn_info.sign, N, m)
+    output = sparse(1:N, (sn_info.col .- 1) .* sn.gridSize .+ sn_info.row, sn_info.sign, N, m)
     if isdense
         output = collect(output)
     end
