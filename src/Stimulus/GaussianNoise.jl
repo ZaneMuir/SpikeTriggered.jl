@@ -21,21 +21,21 @@ struct GaussianNoise{Tv <: Real} <: StimulusEnsemble
 end
 
 # rendering the GN video as dense matrix
-Base.collect(gnd::GaussianNoise; tlen::Union{Nothing, Integer}=nothing, repeats::Integer=1) = begin
-    if isnothing(tlen)
-        video = zeros(size(gnd) .* (1, repeats))
-        tlen = size(gnd, 2)
-    else
-        video = zeros(size(gnd, 1), tlen * repeats)
-    end
+# Base.collect(gnd::GaussianNoise; tlen::Union{Nothing, Integer}=nothing, repeats::Integer=1) = begin
+#     if isnothing(tlen)
+#         video = zeros(size(gnd) .* (1, repeats))
+#         tlen = size(gnd, 2)
+#     else
+#         video = zeros(size(gnd, 1), tlen * repeats)
+#     end
 
-    _tmp = gnd[1:tlen]
-    for idx in 1:repeats
-        video[:, (idx-1)*tlen+1:tlen*idx] .= _tmp
-    end
+#     _tmp = gnd[1:tlen]
+#     for idx in 1:repeats
+#         video[:, (idx-1)*tlen+1:tlen*idx] .= _tmp
+#     end
 
-    video
-end
+#     video
+# end
 
 Base.show(io::IO, gnd::GaussianNoise) = print(io, "gaussian noise design - size: $(size(gnd.video)), t_len: $(gnd.temporalLength)")
 
