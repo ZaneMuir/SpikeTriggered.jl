@@ -1,7 +1,7 @@
 name = "SpikeTriggered"
 uuid = "3c99cc20-eaca-4e17-bd25-d7dac35e9bca"
 authors = ["Yizhan Miao <yzmiao@pm.me>"]
-version = "0.4.0+2"
+version = "0.4.0+3"
 
 [deps]
 DSP = "717857b8-e6f2-59f4-9121-6e50c889abd2"
@@ -11,3 +11,4 @@ Mongoc = "4fe8b98c-fc19-5c23-8ec2-168ff83495f2"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 SDMS = "d0ac49df-e14a-4fbd-9c4a-cc834280f2a8"
 SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
+Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"

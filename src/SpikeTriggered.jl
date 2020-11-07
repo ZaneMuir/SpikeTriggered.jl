@@ -1,5 +1,6 @@
 module SpikeTriggered
 
+import Statistics: mean
 import SDMS.get_entries
 import Mongoc
 import SparseArrays: sparse, spzeros, dropzeros
@@ -15,9 +16,9 @@ include("LinearFilter.jl")
 include("Stimulus/Stimulus.jl")
 
 @doc raw"""
-    STA(X, spk::Array{T, N}) where {T <: Real, N} -> Vector{T}
+    STA(X, spk::Array{T}; n=10) where {T <: Real, N} -> Vector{T}
 
-get the spike triggered average.
+get the spike triggered average. (t0 at left)
 """
 function STA(X, y::Array{T}; n=10) where {T <: Real}
     ȳ = mean(y, dims=2)
