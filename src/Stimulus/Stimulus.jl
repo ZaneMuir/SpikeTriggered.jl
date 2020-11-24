@@ -1,5 +1,6 @@
-abstract type StimulusEnsemble end
+module Stimulus
 
-include("SparseNoise.jl")
-include("GaussianNoise.jl")
-# include("ScrambleSN.jl")
+import Base
+
+include("sparse_noise.jl")
+end
