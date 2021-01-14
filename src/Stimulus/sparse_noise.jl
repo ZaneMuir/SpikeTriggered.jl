@@ -1,14 +1,14 @@
 
-struct SparseNoise
-    ids::Vector{Integer}
-    row::Vector{Integer}
-    col::Vector{Integer}
-    sign::Vector{Integer}
+struct SparseNoise{T}
+    ids::Vector{Int16}
+    row::Vector{Int16}
+    col::Vector{Int16}
+    sign::Vector{T}
     gridsize::Integer
 
     SparseNoise(snra::Vector{T}, gridsize::Integer) where {T <: Integer} = begin
         _snra = parse_snra(snra, gridsize)
-        new(_snra.ids, _snra.row, _snra.col, _snra.sign, gridsize)
+        new{eltype(_snra.sign)}(_snra.ids, _snra.row, _snra.col, _snra.sign, gridsize)
     end
 end
 
@@ -22,11 +22,12 @@ function parse_snra(snra::Array{T}, grid_size::Integer) where {T <: Integer}
     return (ids = T.(_aftermod), row = T.(_row), col = T.(_col), sign = T.(_sign))
 end
 
-Base.collect(sn::SparseNoise) = begin
+Base.collect(sn::SparseNoise{T}) where {T} = begin
     N = length(sn.ids)
-    output = zeros(Int8, N, sn.gridsize * sn.gridsize)
+    output = zeros(T, N, sn.gridsize * sn.gridsize)
     for idx in 1:N
-        @inbounds output[idx, (sn.row[idx]-1)*sn.gridsize+sn.col[idx]] = sn.sign[idx]
+        # @inbounds output[idx, (sn.row[idx]-1)*sn.gridsize+sn.col[idx]] = sn.sign[idx]
+        @inbounds output[idx, (sn.col[idx]-1)*sn.gridsize+sn.row[idx]] = sn.sign[idx]
     end
     return output
 end
