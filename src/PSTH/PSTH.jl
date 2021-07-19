@@ -40,3 +40,13 @@ function psth2timestamps(psth::Vector{T}; width=1, sporadic=false, upper=Inf) wh
     output
 end
 end
+
+function raster(spk::Vector{T}, markers::Vector{T}; head=0.5, duration=1, tail=0.5) where {T <: Real} # -> Vector{Vector{T}}
+    output = Vector{Vector{T}}()
+    for item in markers
+        _roi = (item-head) .< spk .< (item+duration+tail)
+        _candidates = spk[_roi]
+        push!(output, _candidates .- item)
+    end
+    output
+end
