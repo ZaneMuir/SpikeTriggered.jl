@@ -55,7 +55,7 @@ function histogram(u_arr::Vector{T}, edges; sorted = false) where {T}
 end
 
 @doc raw"""
-    gsl_histogram(u_arr::Vector{T}, edges) where {T <: Real}
+    histogram_gsl(u_arr::Vector{T}, edges) where {T <: Real}
 
 Count histogram by providing the edges. If provides `n+1` edges, it would return `n` length histogram.
 Edges would work as: left bound <= value < right bound
@@ -72,7 +72,7 @@ Edges would work as: left bound <= value < right bound
 - numpy mean time: 5.29 ms
 - gsl mean time:   467.721 μs
 """
-function gsl_histogram(u_arr::Vector{T}, edges) where {T <: Real}
+function histogram_gsl(u_arr::Vector{T}, edges) where {T <: Real}
     u_arr = Cdouble.(u_arr)
     edges = Cdouble.(edges)
 
