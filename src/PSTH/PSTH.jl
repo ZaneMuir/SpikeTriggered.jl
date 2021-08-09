@@ -41,6 +41,23 @@ function psth2timestamps(psth::Vector{T}; width=1, sporadic=false, upper=Inf) wh
 end
 end
 
+@doc """
+    raster(spk::Vector{T}, markers::Vector{T}; head, duration, tail) -> Vector{Vector{T}}
+
+Create a raster data for given spike train and event markers (for the event start only)
+
+## Arguments:
+- `spk::Vector{T}`
+- `markers::Vector{T}`
+
+## Keyword Arguments:
+- head: time included before the event markers [default=0.5]
+- duration: event length [default=1.0]
+- tail: time included after the event duration [default=0.5]
+
+## Return
+- `Vector{Vector{T}}`
+"""
 function raster(spk::Vector{T}, markers::Vector{T}; head=0.5, duration=1, tail=0.5) where {T <: Real} # -> Vector{Vector{T}}
     output = Vector{Vector{T}}()
     for item in markers
