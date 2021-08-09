@@ -10,6 +10,40 @@ struct SparseNoise{T}
         _snra = parse_snra(snra, gridsize)
         new{eltype(_snra.sign)}(_snra.ids, _snra.row, _snra.col, _snra.sign, gridsize)
     end
+
+    SparseNoise(snf_file::String, args...; kwargs...) = begin
+        _snra = load_snra(snf_file)
+        SparseNoise(_snra, args...; kwargs...)
+    end
+end
+
+@doc raw"""
+    load_snra(snf_path::String) -> Vector{Int16}
+
+read `snf` sparse noise pseudorandom files
+
+## Synopsis
+
+```c
+struct SNF {
+    int16_t n_order;
+    int32_t base_poly; // not sure what it represents
+    int16_t* snra; // the length would be 2^n_order
+};
+```
+"""
+function load_snra(snf_path::String)
+    @assert isfile(snf_path) && endswith(snf_path, ".snf") "input must be valid SNF file path."
+
+    fid = open(snf_path)
+    n_order = read(fid, Int16)
+    base_poly = read(fid, Int32) #XXX: not sure what bose_ploy represents.
+    snra = reinterpret(Int16, read(fid)) |> collect
+    close(fid)
+    
+    length(snra) == 2 ^ n_order || @warn "snf file data length not match with the record" length(snra) 2^n_order
+
+    snra
 end
 
 function parse_snra(snra::Array{T}, grid_size::Integer) where {T <: Integer}
