@@ -46,6 +46,11 @@ function load_snra(snf_path::String)
     snra
 end
 
+@doc raw"""
+    parse_snra(snra::Array{T}, grid_size::Integer) -> NamedTuple(:ids, :row, :col, :sign)
+
+parse the snra array to sparse noise image info.
+"""
 function parse_snra(snra::Array{T}, grid_size::Integer) where {T <: Integer}
     _aftermod = mod.(snra .- 1, grid_size * grid_size * 2)
     _row = _aftermod .÷ (grid_size * 2) .+ 1
