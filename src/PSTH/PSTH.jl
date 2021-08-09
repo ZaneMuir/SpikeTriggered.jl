@@ -5,7 +5,7 @@ module PSTH
 import GSL
 
 include("histogram.jl")
-include("filter.jl")
+include("filter.jl")  #TODO: review filter.jl
 
 @doc """
 convert PSTH to timestamps.
@@ -39,7 +39,6 @@ function psth2timestamps(psth::Vector{T}; width=1, sporadic=false, upper=Inf) wh
     end
     output
 end
-end
 
 @doc """
     raster(spk::Vector{T}, markers::Vector{T}; head, duration, tail) -> Vector{Vector{T}}
@@ -66,4 +65,11 @@ function raster(spk::Vector{T}, markers::Vector{T}; head=0.5, duration=1, tail=0
         push!(output, _candidates .- item)
     end
     output
+end
+
+#TODO: ERP function
+function erp(trace::Vector{T}, markers::Vector{T}; head=0.5, duration=1, tail=0.5) where {T <: Real}
+
+end
+
 end
