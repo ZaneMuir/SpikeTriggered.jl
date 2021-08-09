@@ -1,19 +1,9 @@
 module SpikeTriggered
 
 import Statistics: mean
-# import SDMS.get_entries
-# import Mongoc
-# import SparseArrays: sparse, spzeros, dropzeros
-# import LinearAlgebra: eigvals, eigvecs
-# import DSP: conv
-# import GSL
-# import Random.randperm
-# include(joinpath(@__DIR__, "../deps/FastConv/FastConv.jl"))
-# convn = FastConv.convn
 
 include("PSTH/PSTH.jl") # ==> binned spikes
 include("Stimulus/Stimulus.jl") # ==> stimulus matrix
-#REVIEW: include("EnsembleStimulus/Stimulus.jl") # ==> stimulus ensemble objects
 
 @doc raw"""
     STA(X, spk::Array{T}; n=10) where {T <: Real, N} -> Vector{T}
@@ -31,20 +21,6 @@ function STA(X, y::Array{T}; n=10) where {T <: Real}
 
     output[:]
 end
-
-#REVIEW:
-# function STA_ensemble(X, spk::Array{T, N}) where {T <: Real, N}
-#     if N == 1
-#         return X * spk ./ sum(spk)
-#     elseif N == 2
-#         (xsize, tlen) = size(X)
-#         output = zeros(xsize)
-#         @inbounds for idx in 1:size(spk, 2)
-#             output += X * spk[1:tlen, idx]
-#         end
-#         return output ./ sum(spk)
-#     end
-# end
 
 # #TODO: STC
 # function STC(X::Array{Tx, 2}, spks::Vector{Ts}) where {Tx, Ts}
