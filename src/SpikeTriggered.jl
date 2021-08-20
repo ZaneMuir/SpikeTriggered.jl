@@ -4,6 +4,7 @@ import Statistics: mean
 
 include("PSTH/PSTH.jl") # ==> binned spikes
 include("Stimulus/Stimulus.jl") # ==> stimulus matrix
+include("OnlineSpikes/OnlineSpikes.jl") # ==> simple event detection and removal
 
 @doc raw"""
     STA(X, spk::Array{T}; n=10) where {T <: Real, N} -> Vector{T}
