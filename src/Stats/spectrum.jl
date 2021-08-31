@@ -22,7 +22,7 @@ The Fourier transform for the time window is defined by
 - Dummer, B., Wieland, S. & Lindner, B. Self-consistent determination of the spike-train power spectrum in a neural network with sparse connectivity. Front. Comput. Neurosci. 8, (2014). DOI: 10.3389/fncom.2014.00104
 
 """
-function spike_train_spectrum_power(spks::Vector{T}, f::T; t_len=1) where {T <: AbstractFloat}
+function spike_train_spectrum_power(spks::Vector{T}, f; t_len=1) where {T <: AbstractFloat}
     ω = T(2 * pi * f)
     _real = cos.(spks .* ω) |> sum
     _imag = sin.(spks .* ω) |> sum
