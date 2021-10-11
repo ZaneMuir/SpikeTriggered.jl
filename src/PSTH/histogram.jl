@@ -97,6 +97,8 @@ function histogram_gsl(u_arr::Vector{T}, edges) where {T <: Real}
 end
 
 @doc """
+    psth2timestamps(psth::Vector{T}; width=1, sporadic=false, upper=Inf) where {T <: Integer} -> Vector{Float64}
+
 convert PSTH to timestamps.
 
 ## Arguments
