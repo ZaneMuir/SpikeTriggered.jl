@@ -130,3 +130,33 @@ function psth2timestamps(psth::Vector{T}; width=1, sporadic=false, upper=Inf) wh
     end
     output
 end
+
+#TODO: optimization required!
+@doc raw"""
+    psth2trace(hist::Vector{T}, roi; σ=0.03, freq=35) where {T} -> Vector{T}
+
+convert histgram into trace-like data, with a Gaussian filter.
+
+## Arguments
+- `hist::Vector{T}`: histogram vector
+- `roi`: range or a vector of timepoints.
+
+## Keyword Arguments:
+- `σ`: sigma of the gaussian kernel (in seconds) [default: 0.03]
+- `freq`: equivalent sampling frequency (Hz) of the histogram. [default: 35]
+
+## Returns:
+- `Vector{T}`: with the same length as the `roi`.
+"""
+function psth2trace(hist::Vector{T}, roi; σ=0.03, freq=35) where {T}
+    ts = range(1/freq/2, step=1/freq, length=length(hist))
+    output = zeros(length(roi))
+    # k_func = SpikeTriggered.PSTH.k_gaussian(σ)
+    k_func = (x) -> exp(x^2 / (-2 * σ ^ 2)) # kernel function
+
+    Threads.@threads for idx in 1:length(output)
+        @inbounds output[idx] = sum(hist .* k_func.(ts .- roi[idx] .+ 1/freq/2))
+    end
+    
+    output
+end
