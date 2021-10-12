@@ -7,26 +7,32 @@ Package for spike triggered neural characterization.
 - PSTH:
   - raster
   - psth2timestamps
-  - TODO: psth2trace
+  - psth2trace
+  - histogram
   - histogram_gsl
-  - XXX: gsl_gaussian_filter
-  - XXX: spk_filter
-  - TODO: spike_gaussian_filter
+  - spike_gaussian_filter
+    - spk_filter
+    - k_gaussian
 - Stats:
-  - TODO: spike_triggered_average
+  - spike_triggered_average
   - TODO: spike_triggered_covariance
   - spike_train_spectrum_power
   - detect_burst
-- OnlineSpikes
+- Waveforms
   - detect_cross_pnt
   - detect_events
-- TODO: Waveforms
+  - gaussian_filter_gsl
   - TODO: trace_event_related
   - TODO: trace_downsample
   - TODO: trace_upsample
-  - TODO: trace_gaussian_smooth
   - TODO: trace_remove_spike
   - TODO: trace_remove_event
   - TODO: make_event_template
 - Stimulus
+  - process_first_of_paired_markers
+  - apply_video_nonlinearity
   - SparseNoise
+    - load_snra
+    - parse_snra
+    - Base.collect
+  - TODO: GaussianNoise (for quick io loading)
