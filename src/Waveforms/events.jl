@@ -46,7 +46,9 @@ function detect_events(trace, cross_pnt::Vector{T}; method::String, win_size, kw
     
     output = zeros(Int64, length(cross_pnt))
     for (idx, item) in enumerate(cross_pnt)
-        _, offset = criteria(trace[item-win_size:item+win_size])
+        _start = max(1, item-win_size)
+        _end = min(length(trace), item+win_size)
+        _, offset = criteria(trace[_start:_end])
         output[idx] = item - win_size + offset
     end
     
