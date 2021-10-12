@@ -22,7 +22,7 @@ Package for spike triggered neural characterization.
   - detect_cross_pnt
   - detect_events
   - gaussian_filter_gsl
-  - TODO: trace_event_related
+  - trace_event_related
   - TODO: trace_downsample
   - TODO: trace_upsample
   - TODO: trace_remove_spike
