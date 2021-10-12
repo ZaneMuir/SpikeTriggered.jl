@@ -1,6 +1,4 @@
-module OnlineSpikes
-
-"""
+@doc raw"""
     detect_cross_pnt(arr; thresh, gap=1, dir=:up, ref=nothing)
 detect data rise or data down points.
 # Arguments
@@ -33,6 +31,7 @@ function detect_cross_pnt(arr::Vector{T}; thresh::T, gap::Int=1, dir::Symbol=:up
     end
 end
 
+#TODO: documentation
 function detect_events(trace; kwargs...)
     cross_pnt = detect_cross_pnt(trace; kwargs...)
     detect_events(trace, cross_pnt; kwargs...)
@@ -55,5 +54,3 @@ function detect_events(trace, cross_pnt::Vector{T}; method::String, win_size, kw
 end
 
 include("event_removal.jl")
-
-end
