@@ -9,4 +9,11 @@ function process_first_of_paired_markers(m::Vector{T}) where {T}
     m[1:2:end-1]
 end
 
+#TODO: doc
+function apply_video_nonlinearity(video, bias=0)
+    _video = copy(video)
+    _video[_video .== bias] .= 0
+    _video
+end
+
 end
