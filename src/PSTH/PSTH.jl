@@ -34,9 +34,4 @@ function raster(spk::Vector{T}, markers::Vector{T}; head=0.5, duration=1, tail=0
     output
 end
 
-#TODO: ERP function
-function erp(trace::Vector{T}, markers::Vector{T}; head=0.5, duration=1, tail=0.5) where {T <: Real}
-
-end
-
 end
