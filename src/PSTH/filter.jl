@@ -24,5 +24,5 @@ Gaussian smoothing for a given spike train.
 - `Vector{T}`: smoothed psth with the same length as `proj`.
 """
 function spike_gaussian_filter(spk::Vector{T}, proj; σ=0.03) where {T <: Real}
-    spk_filter(spk, proj; kernel=k_gaussian(σ))
+    spk_filter(spk, proj, k_gaussian(σ))
 end
