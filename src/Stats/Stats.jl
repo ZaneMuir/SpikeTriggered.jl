@@ -1,6 +1,7 @@
 # Spike Train Statistics
 module Stats
 
+import GSL
 using Statistics: mean
 
 include("spectrum.jl")
