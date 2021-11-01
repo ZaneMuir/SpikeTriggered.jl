@@ -18,6 +18,7 @@ Package for spike triggered neural characterization.
   - TODO: spike_triggered_covariance
   - spike_train_spectrum_power
   - detect_burst
+  - interp_burst
 - Waveforms
   - detect_cross_pnt
   - detect_events
