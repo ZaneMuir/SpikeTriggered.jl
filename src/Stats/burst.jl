@@ -68,24 +68,24 @@ function detect_burst(spk::Vector{T}; t_silence=0.07, t_isi=0.03, nofs::Union{No
     end
 end
 
-function interp_burst(burst_iti::Vector{T}; n=13, iterp_t=nothing) where {T <: Real}
+function interp_burst(burst_iti::Vector{T}; n=13, interp_t=nothing) where {T <: Real}
     N = length(burst_iti)
     iti_list = Cdouble.(burst_iti)
     output = zeros(Cdouble, n)
 
     xa = collect(range(0, stop=1, length=N))
-    iterp_type = if iterp_t == :linear
+    interp_type = if interp_t == :linear
         GSL.gsl_interp_linear
-    elseif iterp_t == :polynomial
+    elseif interp_t == :polynomial
         GSL.gsl_interp_polynomial
-    elseif iterp_t == :cspline
+    elseif interp_t == :cspline
         GSL.gsl_interp_cspline
     else
         GSL.gsl_interp_steffen
     end
 
     #TODO: maybe use GSL.gsl_spline instead.
-    interp_obj = GSL.interp_alloc(iterp_type, N)
+    interp_obj = GSL.interp_alloc(interp_type, N)
     accel_obj = GSL.interp_accel_alloc()
 
     GSL.interp_init(interp_obj, xa, iti_list, N)
