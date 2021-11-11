@@ -1,5 +1,6 @@
 module Waveforms
 import GSL
+using Statistics: median
 
 include("events.jl")
 include("filter.jl")
