@@ -25,3 +25,22 @@ function gaussian_filter_gsl(arr::Vector{Float64}; K::Integer, α::Real=1)
 
     return _output
 end
+
+function _gaussian_kernel(K, α; norm=false)
+    output = zeros(K)
+    N = div(K - 1, 2)
+    _x = -N:N
+    output = exp.(-0.5 .* (α .* _x ./ N) .^ 2)
+    if norm
+        output ./ sum(output)
+    else
+        output
+    end
+end
+
+function filter_gaussian(arr::Vector{T}; K, α, norm=true) where {T}
+    _k = _gaussian_kernel(K, α; norm)
+    _n = div(K - 1, 2)
+    
+    output = convn(arr, _k)[(_n+1):end-_n],
+end
