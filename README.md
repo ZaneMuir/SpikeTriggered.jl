@@ -23,6 +23,11 @@ Package for spike triggered neural characterization.
   - detect_cross_pnt
   - detect_events
   - gaussian_filter_gsl
+  - filter_gaussian
+  - filter_median
+  - TODO: filter_LP_butterworth
+  - TODO: filter_BP_butterworth
+  - TODO: filter_HP_butterworth
   - trace_event_related
   - TODO: trace_downsample
   - TODO: trace_upsample
