@@ -42,7 +42,28 @@ function filter_gaussian(arr::Vector{T}; K, α, norm=true) where {T}
     _k = _gaussian_kernel(K, α; norm)
     _n = div(K - 1, 2)
     
-    output = convn(arr, _k)[(_n+1):end-_n]
+    output = conv(arr, _k)[(_n+1):end-_n]
+end
+
+function filter_LP_butterworth(trace::Vector{T}; cutoff, order=4, fs=10000) where {T}
+    responsetype = Lowpass(cutoff; fs)
+    designmethod = Butterworth(order)
+    
+    filtfilt(digitalfilter(responsetype, designmethod), trace)
+end
+
+function filter_BP_butterworth(trace::Vector{T}; cutoff, order=4, fs=10000) where {T}
+    responsetype = Bandpass(cutoff...; fs)
+    designmethod = Butterworth(order)
+    
+    filtfilt(digitalfilter(responsetype, designmethod), trace)
+end
+
+function filter_HP_butterworth(trace::Vector{T}; cutoff, order=4, fs=10000) where {T}
+    responsetype = Highpass(cutoff; fs)
+    designmethod = Butterworth(order)
+    
+    filtfilt(digitalfilter(responsetype, designmethod), trace)
 end
 
 function filter_median(x::Vector{T}; order=9) where {T <: Integer}
