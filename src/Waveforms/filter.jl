@@ -45,7 +45,7 @@ function filter_gaussian(arr::Vector{T}; K, α, norm=true) where {T}
     output = convn(arr, _k)[(_n+1):end-_n]
 end
 
-function filter_median(x::Vector{T}; order=9) where {T}
+function filter_median(x::Vector{T}; order=9) where {T <: Integer}
     @assert(order % 2 == 1, "order should be odd number.")
     
     N = length(x)
@@ -62,6 +62,28 @@ function filter_median(x::Vector{T}; order=9) where {T}
     
     for idx in N-_width+1:N
         @inbounds output[idx] = round(T, median(x[idx:N]))
+    end
+    
+    output
+end
+
+function filter_median(x::Vector{T}; order=9) where {T <: Real}
+    @assert(order % 2 == 1, "order should be odd number.")
+    
+    N = length(x)
+    output = zeros(T, N)
+    _width = div(order - 1, 2)
+    
+    for idx in 1:_width
+        @inbounds output[idx] = median(x[1:idx])
+    end
+    
+    Threads.@threads for idx in _width+1:N-_width
+        @inbounds output[idx] = median(x[idx-_width:idx+_width])
+    end
+    
+    for idx in N-_width+1:N
+        @inbounds output[idx] = median(x[idx:N])
     end
     
     output
