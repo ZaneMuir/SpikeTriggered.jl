@@ -23,16 +23,20 @@ In most cases, try to use the built-in Array type.
 ## Returns:
 - `Vector`: Vector of the type of `X`; flattened version of the STA matrix [nDimensions x n]. (NOTE: t0 at index `1`.)
 """
-function spike_triggered_average(X, y::Array{T}; n=10) where {T <: Real}
+function spike_triggered_average(X, y::Array{T}; n=10, norm=true) where {T <: Real}
     ȳ = mean(y, dims=2)
-    denom = sum(ȳ)
+    denom = sum(abs, ȳ)
     (N, m) = size(X)
     output = zeros(m, n)
     for tidx in 1:n
         @inbounds output[:, tidx] .= view(ȳ' * circshift(X, tidx - 1) ./ denom, :)
     end
 
-    output[:]
+    if norm
+        output[:] ./ maximum(abs, output)
+    else
+        output[:]
+    end
 end
 
 # #TODO: STC
