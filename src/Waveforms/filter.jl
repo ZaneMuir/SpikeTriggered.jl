@@ -26,11 +26,11 @@ function gaussian_filter_gsl(arr::Vector{Float64}; K::Integer, α::Real=1)
     return _output
 end
 
-function _gaussian_kernel(K, α; norm=false)
+function _gaussian_kernel(::Type{T}, K::Integer, α::Real; norm=false) where {T}
     output = zeros(K)
     N = div(K - 1, 2)
     _x = -N:N
-    output = exp.(-0.5 .* (α .* _x ./ N) .^ 2)
+    output = T.(exp.(-0.5 .* (α .* _x ./ N) .^ 2))
     if norm
         output ./ sum(output)
     else
@@ -38,12 +38,21 @@ function _gaussian_kernel(K, α; norm=false)
     end
 end
 
-function filter_gaussian(arr::Vector{T}; K, α, norm=true) where {T}
-    _k = _gaussian_kernel(K, α; norm)
+function filter_gaussian(arr::Vector{T}; K, α, norm=true, norm_tail=false) where {T<:AbstractFloat}
+    _kernel = _gaussian_kernel(T, K, α; norm)
     _n = div(K - 1, 2)
+    _filted = conv(arr, _kernel)[(_n+1):end-_n]
     
-    output = conv(arr, _k)[(_n+1):end-_n]
+    output = if norm_tail
+        _track = conv(ones(T, length(arr)), _kernel)[(_n+1):end-_n]
+        _filted ./ _track
+    else
+        _filted
+    end
+    
 end
+
+
 
 function filter_LP_butterworth(trace::Vector{T}; cutoff, order=4, fs=10000) where {T}
     responsetype = Lowpass(cutoff; fs)
