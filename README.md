@@ -35,7 +35,11 @@ Package for spike triggered neural characterization.
   - TODO: trace_remove_event
   - TODO: make_event_template
 - Stimulus
-  - process_first_of_paired_markers
+  - marker validation
+    - process_first_of_paired_markers
+    - remove_invalid_timestamps
+    - remove_invalid_serial_timestamps!
+    - remove_invalid_paired_timestamps!
   - apply_video_nonlinearity
   - SparseNoise
     - load_snra
