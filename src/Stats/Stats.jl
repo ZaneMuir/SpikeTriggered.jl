@@ -6,6 +6,7 @@ using Statistics: mean, var, std
 
 include("spectrum.jl")
 include("burst.jl")
+include("correlogram.jl")
 include("stats.jl")
 
 @doc raw"""
