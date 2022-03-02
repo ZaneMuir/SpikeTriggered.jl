@@ -2,10 +2,11 @@
 module Stats
 
 import GSL
-using Statistics: mean
+using Statistics: mean, var, std
 
 include("spectrum.jl")
 include("burst.jl")
+include("stats.jl")
 
 @doc raw"""
     spike_triggered_average(X, y::Array{T}; n=10) where {T<:Real} -> Vector
