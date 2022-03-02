@@ -2,7 +2,7 @@
 
 Package for spike triggered neural characterization.
 
-## structure
+## Index:
 
 - PSTH:
   - raster
@@ -19,6 +19,10 @@ Package for spike triggered neural characterization.
   - spike_train_spectrum_power
   - detect_burst
   - interp_burst
+  - dispersion_index
+  - correlogram
+    - autocorrelogram
+    - crosscorrelogram
 - Waveforms
   - detect_cross_pnt
   - detect_events
