@@ -15,11 +15,11 @@ Package for spike triggered neural characterization.
     - k_gaussian
 - Stats:
   - spike_triggered_average
-  - TODO: spike_triggered_covariance
+  - spike_triggered_covariance
   - spike_train_spectrum_power
   - detect_burst
   - interp_burst
-  - dispersion_index
+  - dispersion_index (Fano factor)
   - correlogram
     - autocorrelogram
     - crosscorrelogram
