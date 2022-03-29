@@ -17,19 +17,24 @@ Create a raster data for given spike train and event markers (for the event star
 - `markers::Vector{T}`
 
 ## Keyword Arguments:
-- head: time included before the event markers [default=0.5]
+- head: time included before the event markers [default: 0.5]
 - duration: event length [default=1.0]
-- tail: time included after the event duration [default=0.5]
+- tail: time included after the event duration [default: 0.5]
+- norm: flag to offset all the spike time to the markers. [default: true]
 
 ## Return
 - `Vector{Vector{T}}`
 """
-function raster(spk::Vector{T}, markers::Vector{T}; head=0.5, duration=1, tail=0.5) where {T <: Real} # -> Vector{Vector{T}}
+function raster(spk::Vector{T}, markers::Vector{T}; head=0.5, duration=1, tail=0.5, norm=true) where {T <: Real} # -> Vector{Vector{T}}
     output = Vector{Vector{T}}()
     for item in markers
         _roi = (item-head) .< spk .< (item+duration+tail)
         _candidates = spk[_roi]
-        push!(output, _candidates .- item)
+        if norm
+            push!(output, _candidates .- item)
+        else
+            push!(output, _candidates)
+        end
     end
     output
 end
