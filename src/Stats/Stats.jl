@@ -3,6 +3,7 @@ module Stats
 
 import GSL
 using Statistics: mean, var, std
+import ..PSTH: histogram_gsl
 
 include("spike_triggered.jl")
 include("spectrum.jl")

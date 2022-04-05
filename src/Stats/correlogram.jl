@@ -20,12 +20,12 @@ One should use either two quick access functions: `autocorrelogram` and `crossco
 """
 function correlogram(target::Vector{T}, reference::Vector{T}; bin_size=1e-2, window_size=301, is_auto=false) where {T}
     _K_half = div(window_size, 2)
-    _bin_boundary = (-_K_half:_K_half) .* bin_size
-    output = zeros(Int64, window_size)
+    _bin_boundary = (-_K_half:_K_half) .* bin_size  #FIXME: boundary not right
+    output = zeros(Int64, window_size-1)
     for pt in reference
         _offset = target .- pt
         _offset = is_auto ? _offset[_offset .!= 0] : _offset
-        output .+= SpikeTriggered.PSTH.histogram_gsl(_offset, _bin_boundary)
+        output .+= histogram_gsl(Float64.(_offset), Float64.(_bin_boundary))
     end
     _bin_boundary[2:end] .- bin_size/2, output
 end
