@@ -11,7 +11,7 @@ Package for spike triggered neural characterization.
   - histogram
   - histogram_gsl
   - spike_gaussian_filter
-    - spk_filter
+    - spike_filter (deprecated: spk_filter)
     - k_gaussian
 - Stats:
   - spike_triggered_average
@@ -19,8 +19,9 @@ Package for spike triggered neural characterization.
   - spike_train_spectrum_power
   - detect_burst
   - interp_burst
+  - split_burst_tonic #TODO
   - dispersion_index (Fano factor)
-  - correlogram
+  - correlogram #FIXME
     - autocorrelogram
     - crosscorrelogram
 - Waveforms
