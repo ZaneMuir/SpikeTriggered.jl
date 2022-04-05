@@ -20,9 +20,9 @@ by ignore bright/dark spots.
 function apply_video_nonlinearity(video, bias=0)
     _bias = if isa(bias, Symbol)
         if bias == :on
-            1
-        elseif bias == :off
             -1
+        elseif bias == :off
+            1
         else # e.g. :diff
             0
         end
