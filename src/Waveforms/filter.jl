@@ -52,8 +52,6 @@ function filter_gaussian(arr::Vector{T}; K, α, norm=true, norm_tail=false) wher
     
 end
 
-
-
 function filter_LP_butterworth(trace::Vector{T}; cutoff, order=4, fs=10000) where {T}
     responsetype = Lowpass(cutoff; fs)
     designmethod = Butterworth(order)
