@@ -106,7 +106,7 @@ convert PSTH to timestamps.
 
 ## Keyword Arguments
 - `width`: define the bin width [default: 1]
-- `sporadic`: if true, the generation would be random; otherwise, evenly divided [default: false]
+- `sporadic`: if true, the generation would be random (using `rand`); otherwise, evenly divided [default: false]
 - `upper`: cutoff of the PSTH bin value [default: Inf]
 
 ## Return
@@ -131,7 +131,8 @@ function psth2timestamps(psth::Vector{T}; width=1, sporadic=false, upper=Inf) wh
     output
 end
 
-#TODO: optimization required!
+#XXX: optimization required!
+#NOTE: use spike filter instead.
 @doc raw"""
     psth2trace(hist::Vector{T}, roi; σ=0.03, freq=35) where {T} -> Vector{T}
 
