@@ -19,7 +19,7 @@ References:
 - `nofs`
 
 ## Returns
-- `burst_list::Vector{Vector{T}}`
+- `burst_list::Vector{Vector{T}}`: groups of burst spikes
 """
 function detect_burst(spk::Vector{T}; t_silence=0.07, t_isi=0.03, nofs::Union{Nothing, Tuple{Integer, Real}}=nothing) where {T <: Real}
     
@@ -67,6 +67,9 @@ function detect_burst(spk::Vector{T}; t_silence=0.07, t_isi=0.03, nofs::Union{No
         burst_list
     end
 end
+
+detect_burst_trn(spk; kwargs...) = detect_burst(spk; t_silence=0.070, t_isi=0.030, nofs=(5, 0.07), kwargs...)
+detect_burst_lgn(spk; kwargs...) = detect_burst(spk; t_silence=0.100, t_isi=0.004, nofs=nothing, kwargs...)
 
 function interp_burst(burst_iti::Vector{T}; n=13, interp_t=nothing) where {T <: Real}
     N = length(burst_iti)
