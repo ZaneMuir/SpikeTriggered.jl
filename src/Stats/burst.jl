@@ -22,11 +22,13 @@ References:
 - `burst_list::Vector{Vector{T}}`: groups of burst spikes
 """
 #TODO: detect_burst(spk::Vector{T}; t_silence_pre=0.07, t_silence_post=0.07, t_isi=0.03, nofs::Union{Nothing, Tuple{Integer, Real}}=nothing) where {T <: Real}
-function detect_burst(spk::Vector{T}; t_silence=0.07, t_isi=0.03, nofs::Union{Nothing, Tuple{Integer, Real}}=nothing) where {T <: Real}
+function detect_burst(spk::Vector{T}; t_silence=0.07, t_isi=0.03, nofs::Union{Nothing, Tuple{Integer, Real}}=nothing, keep_index=false) where {T <: Real}
 
     # initialization
     burst_list = Vector{Vector{T}}()
+    burst_index_list = Vector{Vector{Int64}}()
     current_burst = Vector{T}()
+    current_burst_index = Vector{Int64}()
     flag_in_burst = false
 
     # given the spike numbers are usually large, it is okay to skip the first and the last bursts, if any.
@@ -36,14 +38,17 @@ function detect_burst(spk::Vector{T}; t_silence=0.07, t_isi=0.03, nofs::Union{No
             # continue
             if spk[idx+1] - spk[idx] <= t_isi
                 push!(current_burst, spk[idx])
+                push!(current_burst_index, idx)
 
             # the last one
             else
                 push!(current_burst, spk[idx])
+                push!(current_burst_index, idx)
                 flag_in_burst = false
                 # check the post silence condition
                 if spk[idx+1] - spk[idx] >= t_silence
                     push!(burst_list, current_burst)
+                    push!(burst_index_list, current_burst_index)
                 end
             end
 
@@ -52,28 +57,47 @@ function detect_burst(spk::Vector{T}; t_silence=0.07, t_isi=0.03, nofs::Union{No
             if spk[idx] - spk[idx-1] >= t_silence && spk[idx+1] - spk[idx] <= t_isi
                 flag_in_burst = true
                 current_burst = Vector{T}([spk[idx]])
+                current_burst_index = Vector{Int64}([idx])
             end
         end
     end
 
-    if !isnothing(nofs)
-        output = Vector{Vector{T}}()
-        while !isempty(burst_list)
-            candidate = popfirst!(burst_list)
-            if length(candidate) >= nofs[1]
+    rez = if !isnothing(nofs)
+        output = Vector{T}[]
+        output_index = Vector{Int64}[]
+        for (burst, burst_index) in zip(burst_list, burst_index_list)
+            if length(burst) >= nofs[1]
                 if sum(diff(candidate[1:nofs[1]])) <= nofs[2]
-                    push!(output, candidate)
+                    push!(output, burst)
+                    push!(output_index, burst_index)
                 end
             end
         end
-        output
+        # while !isempty(burst_list)
+        #     candidate = popfirst!(burst_list)
+        #     if length(candidate) >= nofs[1]
+        #         if sum(diff(candidate[1:nofs[1]])) <= nofs[2]
+        #             push!(output, candidate)
+        #         end
+        #     end
+        # end
+        output, output_index
     else
-        burst_list
+        burst_list, burst_index_list
     end
+
+    keep_index ? rez : rez[1]
 end
 
 detect_burst_trn(spk; kwargs...) = detect_burst(spk; t_silence=0.070, t_isi=0.030, nofs=(5, 0.07), kwargs...)
 detect_burst_lgn(spk; kwargs...) = detect_burst(spk; t_silence=0.100, t_isi=0.004, nofs=nothing, kwargs...)
+
+split_tonic_burst(spk; detector, kwargs...) = begin
+    _burst, _burst_idx = detector(spk; keep_index=true, kwargs...)
+    _spk = deepcopy(spk)
+    popat!(_spk, reduce(vcat, _burst_idx))
+    (; burst=_burst, tonic=_spk)
+end
 
 function interp_burst(burst_iti::Vector{T}; n=13, interp_t=nothing) where {T <: Real}
     N = length(burst_iti)
