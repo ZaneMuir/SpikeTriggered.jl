@@ -11,7 +11,7 @@ generating smoothed curve from spike trains. equivalent to the smoothed PSTH.
 """
 function spike_filter(spk::Vector{T}, proj, kernel::Function; norm::Bool=true) where {T <: Real}
     _psth = zeros(T, length(proj))
-    for idx in 1:length(proj)
+    for idx in eachindex(proj)
         @inbounds @fastmath _psth[idx] = sum(kernel, spk .- proj[idx])
     end
     if norm
@@ -38,6 +38,6 @@ Gaussian smoothing for a given spike train.
 ## Returns:
 - `Vector{T}`: smoothed psth with the same length as `proj`.
 """
-function spike_gaussian_filter(spk::Vector{T}, proj; σ=0.03) where {T <: Real}
-    spike_filter(spk, proj, k_gaussian(σ))
+function spike_gaussian_filter(spk::Vector{T}, proj; σ=0.005, kwargs...) where {T <: Real}
+    spike_filter(spk, proj, k_gaussian(T(σ)); norm=false, kwargs...)
 end
