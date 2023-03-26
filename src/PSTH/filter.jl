@@ -22,8 +22,6 @@ function spike_filter(spk::Vector{T}, proj, kernel::Function; norm::Bool=true) w
     end
 end
 
-@deprecate spk_filter(spk, proj, kernel; norm) spike_filter(spk, proj, kernel; norm)
-
 @doc raw"""
     spike_gaussian_filter(spk::Vector{T}, proj; σ=0.03) where {T<:Real} -> Vector{T}
 
