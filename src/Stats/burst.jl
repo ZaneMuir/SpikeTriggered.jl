@@ -67,7 +67,7 @@ function detect_burst(spk::Vector{T}; t_silence=0.07, t_isi=0.03, nofs::Union{No
         output_index = Vector{Int64}[]
         for (burst, burst_index) in zip(burst_list, burst_index_list)
             if length(burst) >= nofs[1]
-                if sum(diff(candidate[1:nofs[1]])) <= nofs[2]
+                if sum(diff(burst[1:nofs[1]])) <= nofs[2]
                     push!(output, burst)
                     push!(output_index, burst_index)
                 end
