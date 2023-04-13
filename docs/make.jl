@@ -1,9 +1,12 @@
-push!(LOAD_PATH, "../src/")
+if isnothing(get(ENV, "CI", nothing))
+    push!(LOAD_PATH, "../src/")
 
-import Pkg
-Pkg.activate(@__DIR__)
-Pkg.resolve()
-Pkg.instantiate()
+    import Pkg
+    Pkg.activate(@__DIR__)
+    Pkg.resolve()
+    Pkg.instantiate()
+end
+
 using Documenter, SpikeTriggered
 
 makedocs(
@@ -19,3 +22,9 @@ makedocs(
         prettyurls = get(ENV, "CI", nothing) == "true"
     ),
 )
+
+if get(ENV, "CI", nothing) == "true"
+    deploydocs(
+        repo = "github.com/ZaneMuir/SpikeTriggered.jl.git",
+    )
+end
