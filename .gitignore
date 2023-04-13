@@ -3,6 +3,7 @@
 Manifest.toml
 .ipynb_checkpoints/
 dev/
+devs/
 
 .DS_Store
 
