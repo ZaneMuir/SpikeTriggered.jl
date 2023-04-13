@@ -1,5 +1,5 @@
 @doc """
-    raster(spk, markers; head, duration, tail) -> Vector{Vector{T}}
+    spike_raster(spk, markers; head, duration, tail) -> Vector{Vector{T}}
 
 Create rasters form spike train and onset time of stimulus.
 

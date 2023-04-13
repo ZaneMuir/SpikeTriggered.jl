@@ -62,10 +62,9 @@ julia> psth = SpikeTriggered.Stats.spike_filter(spike_train/raster, projection, 
 
 ```@docs
 SpikeTriggered.Stats.spike_raster
-SpikeTriggered.PSTH.histogram
-SpikeTriggered.PSTH.histogram_gsl
+SpikeTriggered.Stats.spike_histogram
+SpikeTriggered.Stats.spike_filter
+SpikeTriggered.Stats.spike_filter_gaussian
 SpikeTriggered.PSTH.psth2timestamps
 SpikeTriggered.PSTH.psth2trace
-SpikeTriggered.PSTH.spike_filter
-SpikeTriggered.PSTH.spike_gaussian_filter
 ```
