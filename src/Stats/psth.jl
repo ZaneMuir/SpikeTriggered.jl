@@ -11,8 +11,9 @@ Edges would work as: left bound <= value < right bound.
 # Arguments
 - `u_arr`: a vector of values
 - `edges`: a vector of edges
+
+Note: StatsBase.Histogram is slower than GSL but with less memory footprint.
 """
-#TODO: benchmark this function with `StatsBase.Histogram``
 function histogram_gsl(u_arr::AbstractVector{T}, edges) where {T <: Real}
     u_arr = Cdouble.(u_arr)
     edges = Cdouble.(edges)
@@ -57,6 +58,7 @@ function spike_histogram(spk::AbstractVector{T}, edges::AbstractVector) where {T
     else
         histogram_gsl(spk, edges)
     end
+    #not so fast histogram: _hist = StatsBase.fit(StatsBase.Histogram, spk, edges, closed=:left).weights
 end
 
 @doc raw"""
@@ -150,3 +152,58 @@ g(x) = \frac{\exp(-\frac{x^2}{2 σ^2})}{\sqrt{2\pi} σ}
 function spike_filter_gaussian(spk_or_raster::Union{AbstractVector{T}, Vector{Vector{T}}}, proj::AbstractVector; σ::Real=0.010) where {T <: Real}
     spike_filter(spk_or_raster, proj, gaussian_kernel; σ=T(σ))
 end
+
+@doc raw"""
+    get_histogram_center(edges)
+
+get the center of edge vector. make sure edges are sorted.
+"""
+function get_histogram_center(edges::AbstractVector)
+    edges[1:end-1] .+ diff(edges) ./ 2
+end
+
+@doc raw"""
+    spike_xcorr(target, reference, roi) where {T <: Real}
+
+The crosscorrelogram shows a count of the spikes of the target cell
+at specific time delays with respect the spikes of the reference cell.
+
+If there are multiple trials, use the `spike_xcorr_shifted` to correct
+any bias with a shift predictor.
+"""
+function spike_xcorr(target::AbstractVector{T}, reference::AbstractVector{T}, roi::AbstractVector) where {T <: Real}
+    rez = zeros(Int, length(roi)-1)
+    for ref_t in reference
+        _my_psth = SpikeTriggered.Stats.spike_histogram(target .- ref_t, roi)
+        rez .+= _my_psth
+    end
+    rez
+end
+
+@doc raw"""
+    spike_xcorr_shifted(target, reference, roi; shift_t, shift_t_end) where {T <: Real}
+
+The crosscorrelogram shows a count of the spikes of the target cell
+at specific time delays with respect the spikes of the reference cell.
+Corrected with a shift predictor.
+
+## Keyword Arguments:
+- shift_t: Δt of each shift, usually shift the spike by trials
+- shift_t_end: the end limit of spike_time, usually the end time of the last trial. [default: maximum(reference)]
+"""
+function spike_xcorr_shifted(target::AbstractVector{T}, reference::AbstractVector{T}, roi::AbstractVector;
+        shift_t::AbstractVector{T},
+        shift_t_end::Union{Nothing, T}=nothing
+        ) where {T <: Real}
+    raw = spike_xcorr(target, reference, roi)
+    shift_t_end = isnothing(shift_t_end) ? maximum(reference) : shift_t_end
+    shift_predictor_mat = zeros(Int, length(roi)-1, length(shift_t))
+    for (idx, shift_it) in enumerate(shift_t)
+        _shifted_ref = reference .- shift_it
+        _shifted_ref[_shifted_ref .< 0] .+= .+ shift_t_end
+        shift_predictor_mat[:, idx] = spike_xcorr(target, _shifted_ref, roi)
+    end
+    raw .- mean(shift_predictor_mat, dims=2)[:], shift_predictor_mat
+end
+
+#TODO: crosscorrelogram from rasters, spike_xcorr_shifted(target_raster, reference_raster, roi::AbstractVector)
