@@ -14,6 +14,10 @@ Package for spike triggered neural characterization.
     - spike_filter
     - k_gaussian
 - Stats:
+  - spike_xcorr
+  - spike_xcorr_shifted
+  - spike_jpsth_raw
+  - spike_jpsth_shifted
   - spike_triggered_average
   - spike_triggered_covariance
   - spike_train_spectrum_power (F1)

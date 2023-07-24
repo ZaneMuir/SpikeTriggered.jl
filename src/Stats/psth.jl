@@ -174,7 +174,7 @@ any bias with a shift predictor.
 function spike_xcorr(target::AbstractVector{T}, reference::AbstractVector{T}, roi::AbstractVector) where {T <: Real}
     rez = zeros(Int, length(roi)-1)
     for ref_t in reference
-        _my_psth = SpikeTriggered.Stats.spike_histogram(target .- ref_t, roi)
+        _my_psth = spike_histogram(target .- ref_t, roi)
         rez .+= _my_psth
     end
     rez

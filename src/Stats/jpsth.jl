@@ -3,8 +3,8 @@ function spike_jpsth_raw(x_raster::Vector{Vector{T}}, y_raster::Vector{Vector{T}
     @assert(length(x_raster) == length(y_raster), "JPSTH inputs must have same length.")
     jpsth = zeros(Int, length(roi)-1, length(roi)-1)
     for idx in eachindex(x_raster)
-        x_psth = SpikeTriggered.Stats.spike_histogram(x_raster[idx], roi)
-        y_psth = SpikeTriggered.Stats.spike_histogram(y_raster[idx], roi)
+        x_psth = spike_histogram(x_raster[idx], roi)
+        y_psth = spike_histogram(y_raster[idx], roi)
         jpsth .+= x_psth * y_psth'
     end
     jpsth
