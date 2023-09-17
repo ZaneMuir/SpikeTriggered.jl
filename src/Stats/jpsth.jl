@@ -18,3 +18,17 @@ function spike_jpsth_shifted(x_raster::Vector{Vector{T}}, y_raster::Vector{Vecto
     end
     _raw .- mean(shift_predictor, dims=3)[:, :, 1], shift_predictor
 end
+
+function jpsth_normalized(S1::AbstractMatrix{T}, S2::AbstractMatrix{T}; nan_to=NaN) where {T <: Real}
+    N = size(S1, 2)
+    P1 = mean(S1, dims=2)[:]
+    P2 = mean(S2, dims=2)[:]
+    σ1 = std(S1, dims=2)[:]
+    σ2 = std(S2, dims=2)[:]
+
+    raw = (S1 * S2') ./ N .- P1 * P2'
+    norm = σ1 * σ2'
+    Jnorm = raw ./ norm
+    Jnorm[isnan.(Jnorm)] .= nan_to
+    (; Jn=Jnorm, J=raw)
+end
