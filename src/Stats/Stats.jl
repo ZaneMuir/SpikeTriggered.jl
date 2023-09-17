@@ -2,6 +2,7 @@
 module Stats
 
 import GSL
+import FFTW
 using Statistics: mean, var, std
 
 include("raster.jl")
