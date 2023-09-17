@@ -89,3 +89,7 @@ function remove_invalid_timestamps(markers::Vector{T}; mtype::Symbol, debug=fals
         output
     end
 end
+
+function get_trial_markers(raw_markers::AbstractVector; skip=1, step=2, length=20)
+    raw_markers[range(skip+1; step, length)]
+end

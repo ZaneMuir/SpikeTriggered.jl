@@ -3,6 +3,7 @@ module Stimulus
 import Base
 
 include("sparse_noise.jl")
+include("markers.jl")
 
 @doc raw"""
     apply_video_nonlinearity(video, bias=0) -> video
