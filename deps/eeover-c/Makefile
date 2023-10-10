@@ -17,7 +17,7 @@ else
 endif
 
 library: $(OBJ)
-	$(CC) $(LIB) $(LIBCFLAGS) -o $(LIBNAME) $(LDFLAGS)
+	$(CC) $(OBJ) $(LIBCFLAGS) -o $(LIBNAME) $(LDFLAGS)
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $<
