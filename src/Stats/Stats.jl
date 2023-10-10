@@ -13,5 +13,6 @@ include("spectrum.jl")
 include("burst.jl")
 include("correlogram.jl")
 include("stats.jl")
+include("ellipse_overlap.jl")
 
 end
