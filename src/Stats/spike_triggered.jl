@@ -30,6 +30,7 @@ function spike_triggered_average(X::AbstractMatrix{T}, y::AbstractArray{T}; n=10
     end
 end
 
+#TODO: CR
 @doc raw"""
     spike_triggered_covariance(X::AbstractMatrix{T}, y::AbstractArray{T}; n::Integer=10, verbose=true) where {T, U} -> Matrix{T}
 """
