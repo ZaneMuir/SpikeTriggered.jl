@@ -5,6 +5,11 @@ Manifest.toml
 dev/
 devs/
 
+*.log
+*.so
+*.dylib
+*.dll
+
 .DS_Store
 
 docs/build/
