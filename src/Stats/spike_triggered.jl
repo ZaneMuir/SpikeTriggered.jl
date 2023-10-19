@@ -30,6 +30,34 @@ function spike_triggered_average(X::AbstractMatrix{T}, y::AbstractArray{T}; n=10
     end
 end
 
+function _stimulus_nonlinear(video, bias)
+    _video = copy(video)
+    if isa(bias, Symbol)
+        if bias == :on
+            _video[_video .== -1] .= 0
+        elseif bias == :off
+            _video[_video .== 1] .= 0
+        else # e.g. :diff
+            nothing
+        end
+    else
+        _video[_video .== bias] .= 0
+    end
+    _video
+end
+
+function spike_triggered_average_suite(stimulus, psth; kwargs...)
+    _scaler = sum(psth)
+    rez = (;
+        diff = spike_triggered_average(stimulus, psth; norm=false, kwargs...),
+        on = spike_triggered_average(
+            _stimulus_nonlinear(stimulus, :on), psth; norm=false, kwargs...),
+        off = spike_triggered_average(
+            _stimulus_nonlinear(stimulus, :off), psth; norm=false, kwargs...),
+    )
+    map(x->x .* _scaler, rez)
+end
+
 #TODO: CR
 @doc raw"""
     spike_triggered_covariance(X::AbstractMatrix{T}, y::AbstractArray{T}; n::Integer=10, verbose=true) where {T, U} -> Matrix{T}
