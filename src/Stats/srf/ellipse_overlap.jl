@@ -1,15 +1,15 @@
-module EEOver
+# module EEOver
 
 import Libdl
 
 libEEOver = C_NULL
 func_eeover = fill(C_NULL, 3)
 
-function __init__()
+function __init_eeover__()
     global libEEOver
     global func_eeover
     try
-        libEEOver = Libdl.dlopen(joinpath(@__DIR__, "..", "..", "deps", "eeover-c", "libeeover"))
+        libEEOver = Libdl.dlopen(joinpath(@__DIR__, "..", "..", "..", "deps", "eeover-c", "libeeover"))
         func_eeover[1] = Libdl.dlsym_e(libEEOver, :ellipse_ellipse_overlap_gsl)
         func_eeover[2] = Libdl.dlsym_e(libEEOver, :ellipse_ellipse_overlap_netlibs)
         func_eeover[3] = Libdl.dlsym_e(libEEOver, :ellipse_ellipse_overlap_gems)
@@ -18,13 +18,15 @@ function __init__()
     end
 end
 
-struct EEOverEllipse
-    axis_major::Cdouble
-    axis_minor::Cdouble
-    center_x::Cdouble
-    center_y::Cdouble
-    rotation::Cdouble
-end
+# struct EEOverEllipse
+#     axis_major::Cdouble
+#     axis_minor::Cdouble
+#     center_x::Cdouble
+#     center_y::Cdouble
+#     rotation::Cdouble
+# end
+
+const EEOverEllipse = GaussianEllipse;
 
 struct EEOverResult
     overlapArea::Cdouble
@@ -80,4 +82,9 @@ function eeover(e1::EEOverEllipse, e2::EEOverEllipse; solver=:gsl)
     EEOverResult(rez, roots, rtnCode[1])
 end
 
+function ellipse_overlap_index(e1::GaussianEllipse, e2::GaussianEllipse; kwargs...)
+    _overlap_area = eeover(e1, e2; kwargs...)
+    2 * _overlap_area / (area(e1) + area(e2))
 end
+
+# end
