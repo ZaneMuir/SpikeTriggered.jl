@@ -110,12 +110,17 @@ generating smoothed curve from spike trains. equivalent to convolution.
 
 - psth as `Vector{T}`, same length as `proj`.
 """
-function spike_filter(spk::AbstractVector{T}, proj::AbstractVector, kernel::Function; kwargs...) where {T <: Real}
+function spike_filter(spk::AbstractVector{T}, proj::AbstractVector, kernel::Function; norm_by::Union{Nothing, Function}=nothing, kwargs...) where {T <: Real}
 
     isempty(spk) && (return zeros(T, size(proj)))
 
     # sacrifice memory for speed
     _psth = sum(kernel.(T.(proj)' .- spk; kwargs...); dims=1)[:]
+    if isnothing(_psth)
+        _psth
+    else
+        _psth ./= norm_by(_psth)
+    end
 end
 
 @doc raw"""
