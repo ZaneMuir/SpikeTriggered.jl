@@ -27,6 +27,14 @@ function _calc_footprint(zval, thresh::T; val=0x01, flag=0x80) where {T <: Real}
     rez
 end
 
+@doc raw"""
+    spike_triggered_footprint(stimulus, psth; sta_n=10, bootstrap_n=100, α=())
+
+Footprint as a general approach to quantifying RF size, based on statistical methods used for fMRI.
+With bootstrapping dataset, use false discovery rate test to identify significant spatiotemporal pixels.
+Check out Soto-Sanchez et al 2017 for more details.
+
+"""
 function spike_triggered_footprint(stimulus, psth; sta_n=10, bootstrap_n=100, α::NTuple{aN, T}=()) where {aN, T}
     @assert 0 <= aN <= 3 "α should have length between 0 to 3."
 
@@ -77,6 +85,11 @@ function spike_triggered_footprint(stimulus, psth; sta_n=10, bootstrap_n=100, α
     )
 end
 
+@doc raw"""
+    get_footprint(raw, threshIdx=1; s=16, collapse=false)
+
+get the spatial footprint from the footprint calculation.
+"""
 function get_footprint(raw, threshIdx=1; s=16, collapse=false)
     _fp = zeros(Bool, length(raw.footprint))
     _flag = 0x01 << (8 - threshIdx)

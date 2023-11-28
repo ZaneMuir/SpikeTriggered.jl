@@ -5,6 +5,8 @@ Manifest.toml
 dev/
 devs/
 
+readme.md
+
 *.log
 *.so
 *.dylib

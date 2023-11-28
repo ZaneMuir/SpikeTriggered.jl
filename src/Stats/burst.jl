@@ -21,7 +21,6 @@ References:
 ## Returns
 - `burst_list::Vector{Vector{T}}`: groups of burst spikes
 """
-#TODO: detect_burst(spk::Vector{T}; t_silence_pre=0.07, t_silence_post=0.07, t_isi=0.03, nofs::Union{Nothing, Tuple{Integer, Real}}=nothing) where {T <: Real}
 function detect_burst(spk::Vector{T}; t_silence=0.07, t_isi=0.03, nofs::Union{Nothing, Tuple{Integer, Real}}=nothing, keep_index=false) where {T <: Real}
 
     # initialization
@@ -89,9 +88,30 @@ function detect_burst(spk::Vector{T}; t_silence=0.07, t_isi=0.03, nofs::Union{No
     keep_index ? rez : rez[1]
 end
 
+@doc raw"""
+    detect_burst_trn(spk; kwargs...)
+
+≥5 spikes within 70 ms, spaced ≤30 ms apart following ≥70 ms
+of silence; bursts were terminated when the interspike interval
+exceeded 30 ms, Figure 1B. Thus defined, typical bursts had 5–17
+spikes. Typical bursts lasted between 70 and 100 ms.
+"""
 detect_burst_trn(spk; kwargs...) = detect_burst(spk; t_silence=0.070, t_isi=0.030, nofs=(5, 0.07), kwargs...)
+
+@doc raw"""
+    detect_burst_lgn(spk; kwargs...)
+
+Bursts were defined as two
+or more spikes, each spaced ≤4 ms apart following ≥100 ms of
+silence, Figure 1A; bursts rarely lasted more than 10 ms.
+"""
 detect_burst_lgn(spk; kwargs...) = detect_burst(spk; t_silence=0.100, t_isi=0.004, nofs=nothing, kwargs...)
 
+@doc raw"""
+    split_tonic_burst(spk; detector, kwargs...)
+
+split spike train into burst and tonic groups.
+"""
 split_tonic_burst(spk; detector, kwargs...) = begin
     _burst, _burst_idx = detector(spk; keep_index=true, kwargs...)
     _spk = deepcopy(spk)
@@ -99,6 +119,11 @@ split_tonic_burst(spk; detector, kwargs...) = begin
     (; burst=_burst, tonic=_spk)
 end
 
+@doc raw"""
+    interp_burst(burst_iti::Vector{T}; n=13, interp_t=nothing)
+
+make interpolation of ITI to generate burst patterns.
+"""
 function interp_burst(burst_iti::Vector{T}; n=13, interp_t=nothing) where {T <: Real}
     N = length(burst_iti)
     iti_list = Cdouble.(burst_iti)
