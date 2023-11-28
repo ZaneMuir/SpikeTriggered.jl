@@ -11,6 +11,7 @@ readme.md
 *.so
 *.dylib
 *.dll
+*.*-original
 
 .DS_Store
 
