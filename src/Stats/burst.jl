@@ -21,71 +21,78 @@ References:
 ## Returns
 - `burst_list::Vector{Vector{T}}`: groups of burst spikes
 """
-function detect_burst(spk::Vector{T}; t_silence=0.07, t_isi=0.03, nofs::Union{Nothing, Tuple{Integer, Real}}=nothing, keep_index=false) where {T <: Real}
+function detect_burst(spk::Vector{T};
+    t_silence=0.07,
+    t_pre=nothing,
+    t_post=nothing,
+    t_isi=0.03,
+    nofs::Union{Nothing, Tuple{Integer, Real}}=nothing,
+    keep_index=false) where {T <: Real}
 
-    # initialization
-    burst_list = Vector{Vector{T}}()
-    burst_index_list = Vector{Vector{Int64}}()
-    current_burst = Vector{T}()
-    current_burst_index = Vector{Int64}()
-    flag_in_burst = false
+# initialization
+t_pre = isnothing(t_pre) ? t_silence : t_pre
+t_post = isnothing(t_post) ? t_silence : t_post
+burst_list = Vector{Vector{T}}()
+burst_index_list = Vector{Vector{Int64}}()
+current_burst = Vector{T}()
+current_burst_index = Vector{Int64}()
+flag_in_burst = false
 
-    # given the spike numbers are usually large, it is okay to skip the first and the last bursts, if any.
-    for idx in 2:(length(spk)-1)
-        if flag_in_burst
+# given the spike numbers are usually large, it is okay to skip the first and the last bursts, if any.
+for idx in 2:(length(spk)-1)
+    if flag_in_burst
+        # continue
+        if spk[idx+1] - spk[idx] <= t_isi
+            push!(current_burst, spk[idx])
+            push!(current_burst_index, idx)
 
-            # continue
-            if spk[idx+1] - spk[idx] <= t_isi
-                push!(current_burst, spk[idx])
-                push!(current_burst_index, idx)
-
-            # the last one
-            else
-                push!(current_burst, spk[idx])
-                push!(current_burst_index, idx)
-                flag_in_burst = false
-                # check the post silence condition
-                if spk[idx+1] - spk[idx] >= t_silence
-                    push!(burst_list, current_burst)
-                    push!(burst_index_list, current_burst_index)
-                end
-            end
-
-        # seek for potential burst start
+        # the last one
         else
-            if spk[idx] - spk[idx-1] >= t_silence && spk[idx+1] - spk[idx] <= t_isi
-                flag_in_burst = true
-                current_burst = Vector{T}([spk[idx]])
-                current_burst_index = Vector{Int64}([idx])
+            push!(current_burst, spk[idx])
+            push!(current_burst_index, idx)
+            flag_in_burst = false
+            # check the post silence condition
+            if spk[idx+1] - spk[idx] >= t_post
+                push!(burst_list, current_burst)
+                push!(burst_index_list, current_burst_index)
             end
         end
-    end
 
-    rez = if !isnothing(nofs)
-        output = Vector{T}[]
-        output_index = Vector{Int64}[]
-        for (burst, burst_index) in zip(burst_list, burst_index_list)
-            if length(burst) >= nofs[1]
-                if sum(diff(burst[1:nofs[1]])) <= nofs[2]
-                    push!(output, burst)
-                    push!(output_index, burst_index)
-                end
-            end
-        end
-        # while !isempty(burst_list)
-        #     candidate = popfirst!(burst_list)
-        #     if length(candidate) >= nofs[1]
-        #         if sum(diff(candidate[1:nofs[1]])) <= nofs[2]
-        #             push!(output, candidate)
-        #         end
-        #     end
-        # end
-        output, output_index
+    # seek for potential burst start
     else
-        burst_list, burst_index_list
+        if spk[idx] - spk[idx-1] >= t_pre && spk[idx+1] - spk[idx] <= t_isi
+            flag_in_burst = true
+            current_burst = Vector{T}([spk[idx]])
+            current_burst_index = Vector{Int64}([idx])
+        end
     end
+end
 
-    keep_index ? rez : rez[1]
+rez = if !isnothing(nofs)
+    output = Vector{T}[]
+    output_index = Vector{Int64}[]
+    for (burst, burst_index) in zip(burst_list, burst_index_list)
+        if length(burst) >= nofs[1]
+            if sum(diff(burst[1:nofs[1]])) <= nofs[2]
+                push!(output, burst)
+                push!(output_index, burst_index)
+            end
+        end
+    end
+    # while !isempty(burst_list)
+    #     candidate = popfirst!(burst_list)
+    #     if length(candidate) >= nofs[1]
+    #         if sum(diff(candidate[1:nofs[1]])) <= nofs[2]
+    #             push!(output, candidate)
+    #         end
+    #     end
+    # end
+    output, output_index
+else
+    burst_list, burst_index_list
+end
+
+keep_index ? rez : rez[1]
 end
 
 @doc raw"""

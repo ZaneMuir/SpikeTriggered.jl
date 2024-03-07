@@ -14,8 +14,9 @@ include("spike_triggered.jl")
 include("spectrum.jl")
 include("burst.jl")
 include("correlogram.jl")
-include("stats.jl")
+include("misc.jl")
 include("srf/srf.jl")
 include("footprint.jl")
+include("reliability.jl")
 
 end
