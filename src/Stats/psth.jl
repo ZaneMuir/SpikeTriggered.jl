@@ -116,7 +116,7 @@ function spike_filter(spk::AbstractVector{T}, proj::AbstractVector, kernel::Func
 
     # sacrifice memory for speed
     _psth = sum(kernel.(T.(proj)' .- spk; kwargs...); dims=1)[:]
-    if isnothing(_psth)
+    if isnothing(norm_by)
         _psth
     else
         _psth ./= norm_by(_psth)
