@@ -65,20 +65,20 @@ function spike_triggered_average_suite(stimulus, psth; scale=true, kwargs...)
     map(x->x .* _scaler, rez)
 end
 
-function SpikeTriggered.Stats.spike_triggered_average_zscore(X, y; n=10, bootstrap=-1, kwargs...)
-    _sta = SpikeTriggered.Stats.spike_triggered_average(X, y; n, norm=false, kwargs...)
+function spike_triggered_average_zscore(X, y; n=10, bootstrap=-1, kwargs...)
+    _sta = spike_triggered_average(X, y; n, norm=false, kwargs...)
     bootstrap < 0 && (return _sta) ## simple STA
 
     _bootstrap_offset = if bootstrap == 0  ## full range bootstrapping
         range(n+1, step=1, length=size(X, 1)-n)
     else ## specificed bootstrap number
-        _random_range = Random.randperm(size(X, 1)-2*n)
+        _random_range = randperm(size(X, 1)-2*n)
         _random_range[1:min(length(_random_range), bootstrap)]
     end
 
     _bsta = zeros(eltype(X), length(_sta), length(_bootstrap_offset))
     for (idx, offset) in enumerate(_bootstrap_offset)
-        _bsta[:, idx] .= SpikeTriggered.Stats.spike_triggered_average(circshift(X, -offset), y; n, norm=false, kwargs...)
+        _bsta[:, idx] .= spike_triggered_average(circshift(X, -offset), y; n, norm=false, kwargs...)
     end
     _bsta
     _μ = mean(_bsta; dims=2)[:]
