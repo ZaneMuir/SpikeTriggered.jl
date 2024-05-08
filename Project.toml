@@ -1,7 +1,7 @@
 name = "SpikeTriggered"
 uuid = "3c99cc20-eaca-4e17-bd25-d7dac35e9bca"
 authors = ["Yizhan Miao <yzmiao@pm.me>"]
-version = "0.13.1"
+version = "0.13.2"
 
 [deps]
 DSP = "717857b8-e6f2-59f4-9121-6e50c889abd2"
@@ -11,4 +11,3 @@ Libdl = "8f399da3-3557-5675-b5ff-fb832c97cbdb"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 SpecialFunctions = "276daf66-3868-5448-9aa4-cd146d93841b"
 Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
-

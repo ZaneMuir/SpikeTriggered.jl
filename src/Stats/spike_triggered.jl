@@ -14,7 +14,8 @@ In most cases, try to use the built-in Array type.
 ## Returns:
 - `Vector`: Vector of the type of `X`; flattened version of the STA matrix [nDimensions x n]. (NOTE: t0 at index `1`.)
 """
-function spike_triggered_average(X::AbstractMatrix{T}, y::AbstractArray{T}; n=10, norm=true) where {T}
+function spike_triggered_average(X::AbstractMatrix, y::AbstractArray; n=10, norm=true)
+    T = eltype(X)
     ȳ = mean(y, dims=2)
     denom = sum(abs, ȳ)
     (N, m) = size(X)
@@ -52,8 +53,8 @@ end
 same inputs as for `spike_triggered_average`,
     but return a tuple of STAs from difference map, on map and off map.
 """
-function spike_triggered_average_suite(stimulus, psth; kwargs...)
-    _scaler = sum(psth)
+function spike_triggered_average_suite(stimulus, psth; scale=true, kwargs...)
+    _scaler = scale ? sum(psth) : 1
     rez = (;
         diff = spike_triggered_average(stimulus, psth; norm=false, kwargs...),
         on = spike_triggered_average(
@@ -62,6 +63,27 @@ function spike_triggered_average_suite(stimulus, psth; kwargs...)
             _stimulus_nonlinear(stimulus, :off), psth; norm=false, kwargs...),
     )
     map(x->x .* _scaler, rez)
+end
+
+function SpikeTriggered.Stats.spike_triggered_average_zscore(X, y; n=10, bootstrap=-1, kwargs...)
+    _sta = SpikeTriggered.Stats.spike_triggered_average(X, y; n, norm=false, kwargs...)
+    bootstrap < 0 && (return _sta) ## simple STA
+
+    _bootstrap_offset = if bootstrap == 0  ## full range bootstrapping
+        range(n+1, step=1, length=size(X, 1)-n)
+    else ## specificed bootstrap number
+        _random_range = Random.randperm(size(X, 1)-2*n)
+        _random_range[1:min(length(_random_range), bootstrap)]
+    end
+
+    _bsta = zeros(eltype(X), length(_sta), length(_bootstrap_offset))
+    for (idx, offset) in enumerate(_bootstrap_offset)
+        _bsta[:, idx] .= SpikeTriggered.Stats.spike_triggered_average(circshift(X, -offset), y; n, norm=false, kwargs...)
+    end
+    _bsta
+    _μ = mean(_bsta; dims=2)[:]
+    _σ = std(_bsta; dims=2)[:]
+    _zscore = (_sta .- _μ) ./ _σ
 end
 
 #TODO: CR
