@@ -1,4 +1,34 @@
 @doc raw"""
+    make_strf(val; gridsize) -> Array{T, 3} SxSxT
+
+convert strf vector into 3d spatiotemporal matrix.
+
+When plotting with heatmap, REMEMBER to use
+the transversed matrix and reversed y axis.
+"""
+function make_strf(val::AbstractArray; gridsize::Integer,
+        _gridwidth=nothing, _gridheight=nothing)
+    collect(reshape(val, gridsize, gridsize, :))
+end
+
+@doc raw"""
+    hstack_strf(val; gridsize) -> Array{T, 2} Sx(SxT)
+
+convert strf 3d matrix into horizontal matrix.
+
+When plotting with heatmap, REMEMBER to use
+the transversed matrix and reversed y axis.
+"""
+function hstack_strf(val::AbstractArray; kwargs...)
+    _strf = make_strf(val; kwargs...)
+    hstack_strf(_strf)
+end
+
+function hstack_strf(val::AbstractArray{T, 3}) where {T}
+    reduce(hcat, eachslice(val; dims=3))
+end
+
+@doc raw"""
     spike_triggered_average(X::AbstractMatrix{T}, y::AbstractArray{T}; n=10, norm=true) where {T} -> Vector{T}
 
 get the spike triggered average from the stimulus matrix and the spike trains.
@@ -65,7 +95,7 @@ function spike_triggered_average_suite(stimulus, psth; scale=true, kwargs...)
     map(x->x .* _scaler, rez)
 end
 
-function spike_triggered_average_zscore(X, y; n=10, bootstrap=-1, kwargs...)
+function spike_triggered_average_zscore_floop(X, y; n=10, bootstrap=-1, kwargs...)
     _sta = spike_triggered_average(X, y; n, norm=false, kwargs...)
     bootstrap < 0 && (return _sta) ## simple STA
 
@@ -77,7 +107,7 @@ function spike_triggered_average_zscore(X, y; n=10, bootstrap=-1, kwargs...)
     end
 
     _bsta = zeros(eltype(X), length(_sta), length(_bootstrap_offset))
-    for (idx, offset) in enumerate(_bootstrap_offset)
+    @floop for (idx, offset) in enumerate(_bootstrap_offset)
         _bsta[:, idx] .= spike_triggered_average(circshift(X, -offset), y; n, norm=false, kwargs...)
     end
     _bsta

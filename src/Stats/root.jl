@@ -6,6 +6,8 @@ import FFTW
 using Random: randperm
 using Statistics: mean, var, std
 using SpecialFunctions: erfc, erfcinv
+using Distributions: cdf, Normal
+using FLoops: @floop
 
 include("raster.jl")
 include("psth.jl")
