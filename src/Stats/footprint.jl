@@ -1,9 +1,12 @@
 
 @doc raw"""
-    get_footprint_map(zscore::AbstractArray; alpha=0.01, collapse=false, gridsize=nothing)
+    get_footprint_map(zscore::AbstractArray; alpha=0.01, fdr_c=1, collapse=false, gridsize=nothing)
 
 create a footprint map based on the q-values
 using Benjamini–Hochberg procedure.
+
+For arbiturary join distribution of p-values,
+one could set `fdr_c` as `ln(N)+1/N+0.5772 (Euler constant)`.
 
 color codes as:
 - `1`: ON response
@@ -11,13 +14,14 @@ color codes as:
 - `-1`: OFF response
 """ 
 function get_footprint_map(zscore::AbstractArray; alpha=0.01,
-        collapse=false, gridsize=nothing)
+        collapse=false, gridsize=nothing, fdr_c=1)
     @assert !(collapse && (gridsize isa Nothing)) "please specify gridsize to get collapsed footprint map"
     
-    _mask = get_footprint_mask(zscore; alpha)
+    _mask = get_footprint_mask(zscore; alpha, fdr_c)
     _map = map(x->Int(sign(x)), _mask .* zscore)
 
     if collapse
+        #NOTE: polarity is set as the first sign of footprint
         map(x->begin
                 _idx = findfirst(abs.(x) .> 0)
                 _idx isa Nothing ? 0 : Int(x[_idx])
@@ -28,13 +32,13 @@ function get_footprint_map(zscore::AbstractArray; alpha=0.01,
 end
 
 @doc raw"""
-    get_footprint_mask(zscore::AbstractArray; alpha=0.01)
+    get_footprint_mask(zscore::AbstractArray; alpha=0.01, fdr_c=1)
 
 create a binary footprint mask based on the q-values
 using Benjamini–Hochberg procedure.
 """
-function get_footprint_mask(zscore::AbstractArray; alpha=0.01)
-    get_footprint_mask_from_qvalue(zscore_fdr_qvalue(zscore); alpha)
+function get_footprint_mask(zscore::AbstractArray; alpha=0.01, fdr_c=1)
+    get_footprint_mask_from_qvalue(zscore_fdr_qvalue(zscore; C=fdr_c); alpha)
 end
 
 @doc raw"""
@@ -61,12 +65,12 @@ Returns:
 - `qval`: the q-values
 - `k`: the permutation vector of the zscore, based on the 2-tailed p-values of normal distribution.
 """
-function zscore_fdr_qvalue(zscore::AbstractArray;)
+function zscore_fdr_qvalue(zscore::AbstractArray; C=1)
 
     Pz = zscore_pvalue(zscore) .* 2  # 2 tails
     M = length(Pz)
     k = sortperm(Pz[:])
-    qval = Pz .* M ./ reshape(k, size(Pz)...)
+    qval = Pz .* (M * C) ./ reshape(invperm(k), size(Pz)...)
 
     (qval, k)
 end
