@@ -1,27 +1,19 @@
-@doc """
-    spike_raster(spk, markers; head, duration, tail) -> Vector{Vector{T}}
 
-Create rasters form spike train and onset time of stimulus.
+@doc raw"""
+    spike_raster(spike_train::AbstractVector{T}, markers::AbstractVector; head=0.5, duration=1.0, tail=0.5, offset=true) -> Vector{Vector{T}}
 
-## Arguments:
-- `spk::AbstractVector{T}`: spike train
-- `markers::AbstractVector`: onset time of stimulus
+Create rasters from `spike_train` and onset times of stimulus (`markers`),
+with interval of `(marker-head, marker+duration+tail]`.
 
-## Keyword Arguments:
-- `head`: time included before the event markers
-- `duration`: event length
-- `tail`: time included after the event duration
-- `offset`: flag to offset all the spike time to the onset time. [default: `true``]
-
-## Return
-- rasters as `Vector{Vector{T}}`
+If `offset` is `true`, spike times of each trial be relative to the onset time.
 """
 function spike_raster(spk::AbstractVector{T}, markers::AbstractVector;
-    head::Real, duration::Real, tail::Real, offset::Bool=true) where {T <: Real}
+    head::Real=0.5, duration::Real=1.0, tail::Real=0.5, offset::Bool=true
+    ) where {T <: Real}
 
     output = Vector{T}[]
     for item in markers
-        _candidates = spk[(item-head) .<= spk .< (item+duration+tail)]
+        _candidates = spk[(item-head) .< spk .<= (item+duration+tail)]
         if offset
             push!(output, _candidates .- item)
         else

@@ -33,6 +33,52 @@
 # autocorrelogram(ts_vec; kwargs...) = correlogram(ts_vec, ts_vec; is_auto=true, kwargs...)
 # crosscorrelogram(args...; kwargs...) = correlogram(args...; is_auto=false, kwargs...)
 
+@doc raw"""
+    spike_xcorr(target, reference, roi) where {T <: Real}
+
+The crosscorrelogram shows a count of the spikes of the target cell
+at specific time delays with respect the spikes of the reference cell.
+
+If there are multiple trials, use the `spike_xcorr_shifted` to correct
+any bias with a shift predictor.
+"""
+function spike_xcorr(target::AbstractVector{T}, reference::AbstractVector{T}, roi::AbstractVector) where {T <: Real}
+    rez = zeros(Int, length(roi)-1)
+    for ref_t in reference
+        _my_psth = spike_histogram(target .- ref_t, roi)
+        rez .+= _my_psth
+    end
+    rez
+end
+
+@doc raw"""
+    spike_xcorr_shifted(target, reference, roi; shift_t, shift_t_end) where {T <: Real}
+
+The crosscorrelogram shows a count of the spikes of the target cell
+at specific time delays with respect the spikes of the reference cell.
+Corrected with a shift predictor.
+
+## Keyword Arguments:
+- shift_t: Δt of each shift, usually shift the spike by trials
+- shift_t_end: the end limit of spike_time, usually the end time of the last trial. [default: maximum(reference)]
+"""
+function spike_xcorr_shifted(target::AbstractVector{T}, reference::AbstractVector{T}, roi::AbstractVector;
+        shift_t::AbstractVector{T},
+        shift_t_end::Union{Nothing, T}=nothing
+        ) where {T <: Real}
+    raw = spike_xcorr(target, reference, roi)
+    shift_t_end = isnothing(shift_t_end) ? maximum(reference) : shift_t_end
+    shift_predictor_mat = zeros(Int, length(roi)-1, length(shift_t))
+    for (idx, shift_it) in enumerate(shift_t)
+        _shifted_ref = reference .- shift_it
+        _shifted_ref[_shifted_ref .< 0] .+= .+ shift_t_end
+        shift_predictor_mat[:, idx] = spike_xcorr(target, _shifted_ref, roi)
+    end
+    raw .- mean(shift_predictor_mat, dims=2)[:], shift_predictor_mat
+end
+
+#TODO: crosscorrelogram from rasters, spike_xcorr_shifted(target_raster, reference_raster, roi::AbstractVector)
+
 function cross_correlation(f::AbstractArray{T}, g::AbstractArray{T}, dims=1) where {T <: Real}
     N = size(f, dims)
     @assert reduce(&, size(f) .== size(g)) "input sizes are not matched."

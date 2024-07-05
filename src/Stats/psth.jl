@@ -1,5 +1,5 @@
 
-#### Histogram
+#### Binned PSTH
 
 @doc raw"""
     histogram_gsl(u_arr, edges) where {T <: Real}
@@ -39,123 +39,70 @@ function histogram_gsl(u_arr::AbstractVector{T}, edges) where {T <: Real}
 end
 
 @doc raw"""
-    spike_histogram(spk::AbstractVector, edges::AbstractVector)
+    histogram_fhist(u_arr, edges; kwargs...) -> Vector
 
-PSTH as histogram, where edges are defined by user.
+Count histogram using `FHist.Hist1D`, which has similar performance as `GSL`.
 
-# Arguments:
-
-- `spk::AbstractVector{T}`: spike train
-- `edges::AbstractVector`: edges of histogram, noted that it should be length of `n+1`.
-
-# Returns:
-
-- psth as `Vector{T}` of length `n`.
+`kwargs` will be relayed to `FHist.Hist1D`;
+for example, one could set element type of the histogram to `Float32`
+by passing `counttype=Float32`.
 """
-function spike_histogram(spk::AbstractVector{T}, edges::AbstractVector) where {T <: Real}
+function histogram_fhist(u_arr::AbstractVector, edges; kwargs...)
+    h = Hist1D(u_arr; binedges=edges, kwargs...)
+    bincounts(h)
+end
+
+@doc raw"""
+    spike_histogram(spike_train::AbstractVector{T}, edges::AbstractVector; dtype::Type, kwargs...) -> Vector{T}
+
+Peri-stimulus time histogram.
+`edges` should be length of `n+1` to create a histogram of length `n`.
+
+If `spike_train` is empty, it will return `zeros(T, n)`
+
+If `counttype` is not specified, the returned vector will have same type `T`
+"""
+function spike_histogram(spk::AbstractSpikeTrain{T}, edges::AbstractVector;
+    dtype::Union{Type, Nothing}=nothing, kwargs...
+    ) where {T <: Real}
+
+    dtype = isnothing(dtype) ? T : dtype
     if isempty(spk)
-        zeros(Int, length(edges)-1)
+        zeros(dtype, length(edges)-1)
     else
-        histogram_gsl(spk, edges)
+        histogram_fhist(spk, edges; counttype=dtype, kwargs...)
     end
-    #not so fast histogram: _hist = StatsBase.fit(StatsBase.Histogram, spk, edges, closed=:left).weights
+end
+
+# markers can be 2d matrix with shape of [nEdges x nRepeats]
+# or specify the repeat dimension
+@doc raw"""
+    spike_histogram(spike_train, edges::AbstractMatrix; kwargs...) -> Matrix{T}
+
+Peri-stimulus time histogram with multiple trials.
+`edges` should be shape of [`n+1` x nRepeats] to create a histogram of shape [`n` x nRepeats].
+
+If `dims` is specified, trial dimension will be overwrite.
+
+Additional `kwargs` will be passed to `spike_histogram`.
+"""
+function spike_histogram(spk::AbstractSpikeTrain, edges::AbstractMatrix; dims=2, kwargs...)
+    reduce(hcat, map(x->spike_histogram(spk, x; kwargs...), eachslice(edges; dims)))
 end
 
 @doc raw"""
-    spike_histogram(spk::AbstractVector, binsize::Real)
+    spike_histogram(raster::SpikeRaster{T}, args...; norm=true, kwargs...) -> VecOrMat{T}
 
-PSTH as histogram, where edges are created based on the provided binsize.
+PSTH from averaging rasters.
 
-# Arguments:
-
-- `spk::AbstractVector{T}`: spike train
-- `binsize::Real`: binsize of histogram. edges will be created as: `range(_min_time, step=binsize, length=_L+1)`
+If `norm` is `true`, PSTH will be normalized by the length of trials.
 """
-function spike_histogram(spk::AbstractVector{T}, binsize::Real) where {T <: Real}
-    (_min, _max) = extrema(spk)
-    _L = floor(Int, (_max - _min) / binsize)
-    _edges = range(_min, step=binsize, length=_L+1)
-    spike_histogram(spk, _edges)
-end
+function spike_histogram(raster::SpikeRaster{T}, args...;
+    norm::Bool=true, kwargs...) where {T <: Real}
 
-@doc raw"""
-    spike_histogram(raster::Vector{Vector{T}}, args...; norm=true)
-
-PSTH as histogram from averaging trials.
-"""
-function spike_histogram(raster::Vector{Vector{T}}, args...; norm::Bool=true) where {T <: Real}
     _flatten = reduce(vcat, raster; init=T[])
-    _psth = spike_histogram(_flatten, args...)
+    _psth = spike_histogram(_flatten, args...; kwargs...)
     norm ? _psth ./ length(raster) : _psth
-end
-
-#### Filter
-
-@doc raw"""
-    spike_filter(spk, proj, kernel::Function; kwargs...) where {T <: Real} -> Vector{T}
-
-generating smoothed curve from spike trains. equivalent to convolution.
-
-```math
-\text{PSTH}(t) = (h * s)(t) = \sum_i \delta(t - t'_i) h (t - t'_i),\; t \in \text{proj}
-```
-
-# Arguments:
-
-- spk: spike train vector
-- proj: range or vector of timestamps interested
-- kernel: function of the smoothing kernel, should be `(::T; kwargs...)::T`
-
-# Returns:
-
-- psth as `Vector{T}`, same length as `proj`.
-"""
-function spike_filter(spk::AbstractVector{T}, proj::AbstractVector, kernel::Function; norm_by::Union{Nothing, Function}=nothing, kwargs...) where {T <: Real}
-
-    isempty(spk) && (return zeros(T, size(proj)))
-
-    # sacrifice memory for speed
-    _psth = sum(kernel.(T.(proj)' .- spk; kwargs...); dims=1)[:]
-    if isnothing(norm_by)
-        _psth
-    else
-        _psth ./= norm_by(_psth)
-    end
-end
-
-@doc raw"""
-    spike_filter(raster, proj, kernel::Function; kwargs...) where {T <: Real} -> Vector{T}
-
-generating smoothed curve from rasters.
-"""
-function spike_filter(raster::Vector{Vector{T}}, args...; kwargs...) where {T <: Real}
-    _flatten = reduce(vcat, raster)
-    _N = length(raster)
-    _psth = spike_filter(_flatten, args...; kwargs...) ./ _N
-end
-
-@doc raw"""
-    gaussian_kernel(x::T; σ::T)
-
-Inline [Gaussian function](https://en.wikipedia.org/wiki/Gaussian_filter).
-
-```math
-g(x) = \frac{\exp(-\frac{x^2}{2 σ^2})}{\sqrt{2\pi} σ}
-```
-"""
-@inline gaussian_kernel(x::T; σ::T) where{T <: AbstractFloat} = exp(x^2 / (- 2 * σ ^ 2)) / (σ * sqrt(2 * T(π)))
-
-@doc raw"""
-    spike_filter_gaussian(spk_or_raster, proj; σ=0.010)
-
-Spike filter using [Gaussian function](https://en.wikipedia.org/wiki/Gaussian_filter).
-
-```math
-g(x) = \frac{\exp(-\frac{x^2}{2 σ^2})}{\sqrt{2\pi} σ}
-```
-"""
-function spike_filter_gaussian(spk_or_raster::Union{AbstractVector{T}, Vector{Vector{T}}}, proj::AbstractVector; σ::Real=0.010) where {T <: Real}
-    spike_filter(spk_or_raster, proj, gaussian_kernel; σ=T(σ))
 end
 
 @doc raw"""
@@ -163,52 +110,67 @@ end
 
 get the center of edge vector. make sure edges are sorted.
 """
-function get_histogram_center(edges::AbstractVector)
-    edges[1:end-1] .+ diff(edges) ./ 2
+get_histogram_center(edges::AbstractVector) = edges[1:end-1] .+ diff(edges) ./ 2
+
+#### Smoothed PSTH
+
+@deprecate spike_filter(spk, proj, kernel; norm_by=nothing, kwargs...) spike_histogram_smoothed(spk, proj, kernel; norm=isnothing(norm_by), kwargs...)
+@deprecate spike_filter_gaussian(spk_or_raster, proj; kwargs...) spike_histogram_smoothed(spk_or_raster, proj; kwargs...)
+
+@doc raw"""
+    spike_histogram_smoothed(spike_train::SpikeTrain{T}, projection::AbstractArray, kernel::Function=gaussian_kernel; norm=true, kwargs...) -> Vector{T}
+
+Generating smoothed curve from spike trains. Equivalent to convolution.
+
+```math
+\text{PSTH}(t) = (h * s)(t) = \sum_i \delta(t - t'_i) h (t - t'_i),\; t \in \text{proj}
+```
+
+If `norm` is `true`, the results will be normalized by the maximum value.
+
+All `kwargs` will be passed to `kernel` function.
+"""
+function spike_histogram_smoothed(
+    spk::AbstractSpikeTrain{T},
+    proj::AbstractArray,
+    kernel::Function=gaussian_kernel;
+    norm=true,
+    kwargs...
+    ) where {T <: Real}
+
+    isempty(spk) && (return zeros(T, size(proj)))
+    _psth = similar(proj, T)
+    @floop for idx in eachindex(proj)
+        _psth[idx] = sum(kernel.(spk .- proj[idx]; kwargs...))
+    end
+    norm ? _psth ./ maximum(abs, _psth) : _psth
 end
 
 @doc raw"""
-    spike_xcorr(target, reference, roi) where {T <: Real}
+    spike_histogram_smoothed(raster, args...; kwargs...) where {T <: Real} -> Vector{T}
 
-The crosscorrelogram shows a count of the spikes of the target cell
-at specific time delays with respect the spikes of the reference cell.
+Generating smoothed PSTH from rasters.
 
-If there are multiple trials, use the `spike_xcorr_shifted` to correct
-any bias with a shift predictor.
+If `norm` is `true`, PSTH will be normalized to the maximum number;
+otherwise, it will be divided by the number of trials in the raster.
 """
-function spike_xcorr(target::AbstractVector{T}, reference::AbstractVector{T}, roi::AbstractVector) where {T <: Real}
-    rez = zeros(Int, length(roi)-1)
-    for ref_t in reference
-        _my_psth = spike_histogram(target .- ref_t, roi)
-        rez .+= _my_psth
+function spike_histogram_smoothed(raster::SpikeRaster{T}, args...; norm=false, kwargs...) where {T <: Real}
+    _flatten = reduce(vcat, raster; init=T[])
+    _N = length(raster)
+    if norm
+        spike_histogram_smoothed(_flatten, args...; norm=true, kwargs...)
+    else
+        spike_histogram_smoothed(_flatten, args...; norm=false, kwargs...) ./ _N
     end
-    rez
 end
 
 @doc raw"""
-    spike_xcorr_shifted(target, reference, roi; shift_t, shift_t_end) where {T <: Real}
+    gaussian_kernel(x::T; σ::T=0.005)
 
-The crosscorrelogram shows a count of the spikes of the target cell
-at specific time delays with respect the spikes of the reference cell.
-Corrected with a shift predictor.
+Inline [Gaussian function](https://en.wikipedia.org/wiki/Gaussian_filter).
 
-## Keyword Arguments:
-- shift_t: Δt of each shift, usually shift the spike by trials
-- shift_t_end: the end limit of spike_time, usually the end time of the last trial. [default: maximum(reference)]
+```math
+g(x) = \frac{\exp(-\frac{x^2}{2 σ^2})}{\sqrt{2\pi} σ}
+```
 """
-function spike_xcorr_shifted(target::AbstractVector{T}, reference::AbstractVector{T}, roi::AbstractVector;
-        shift_t::AbstractVector{T},
-        shift_t_end::Union{Nothing, T}=nothing
-        ) where {T <: Real}
-    raw = spike_xcorr(target, reference, roi)
-    shift_t_end = isnothing(shift_t_end) ? maximum(reference) : shift_t_end
-    shift_predictor_mat = zeros(Int, length(roi)-1, length(shift_t))
-    for (idx, shift_it) in enumerate(shift_t)
-        _shifted_ref = reference .- shift_it
-        _shifted_ref[_shifted_ref .< 0] .+= .+ shift_t_end
-        shift_predictor_mat[:, idx] = spike_xcorr(target, _shifted_ref, roi)
-    end
-    raw .- mean(shift_predictor_mat, dims=2)[:], shift_predictor_mat
-end
-
-#TODO: crosscorrelogram from rasters, spike_xcorr_shifted(target_raster, reference_raster, roi::AbstractVector)
+@inline gaussian_kernel(x::T; σ::T=0.005) where{T <: AbstractFloat} = exp(x^2 / (- 2 * σ ^ 2)) / (σ * sqrt(2 * T(π)))

@@ -1,4 +1,5 @@
-#TODO: doc
+#TODO: code review and documentation
+
 function spike_jpsth_raw(x_raster::Vector{Vector{T}}, y_raster::Vector{Vector{T}}, roi::AbstractVector) where {T <: Real}
     @assert(length(x_raster) == length(y_raster), "JPSTH inputs must have same length.")
     jpsth = zeros(Int, length(roi)-1, length(roi)-1)
