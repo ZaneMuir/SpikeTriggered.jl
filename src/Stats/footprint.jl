@@ -103,7 +103,7 @@ function zscore_fdr_qvalue(zscore::AbstractArray; C=1)
 
     Pz = zscore_pvalue(zscore) .* 2  # 2 tails
     (qval, k) = benjamini_hochberg_qvalue(Pz; C)
-    return (qval, invperm(k))
+    return (qval, invperm(k[:]))
 end
 
 @doc raw"""
