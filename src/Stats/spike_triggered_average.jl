@@ -85,14 +85,19 @@ function spike_triggered_average_bootstrap(
     stimulus::AbstractMatrix{T},
     spike_train::AbstractSpikeTrain,
     marker::AbstractMarker;
-    n::Integer=10, bootstrap=1000
+    n::Integer=10, bootstrap=1000, skip_n=false,
     ) where {T}
 
     (D, _N) = size(stimulus)
     @assert bootstrap > 0 "bootstrap must be positive value"
 
     _duration = abs(-(extrema(marker)...))
-    _t_shift = rand(bootstrap) .* _duration
+    _t_shift = if skip_n
+        _delta_t = mean(diff(marker[:]))
+        rand(bootstrap) .* (_duration - _delta_t * n) .+ _delta_t * n
+    else
+        rand(bootstrap) .* _duration
+    end
 
     bsta = Matrix{T}(undef, D*n, bootstrap)
     @floop for (idx, offset) in enumerate(_t_shift)
