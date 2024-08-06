@@ -54,3 +54,21 @@ end
 function hstack_strf(val::AbstractArray{T, 3}) where {T}
     reduce(hcat, eachslice(val; dims=3))
 end
+
+@doc raw"""
+    image2dataset(image::AbstractMatrix) -> ([X Y], [Z])
+
+convert 2d image into `(x, y)` coordinates and vector of elements (`z`).
+Primarilly used for 2d gaussian fit.
+"""
+function image2dataset(image::AbstractMatrix{T}) where {T} # -> ([X Y], [Z])
+    N = length(image)
+    _coord = Matrix{Int64}(undef, N, 2)
+    _z = Vector{T}(undef, N)
+    for (idx, item) in enumerate(CartesianIndices(image))
+        _coord[idx, 1] = item[2] # x
+        _coord[idx, 2] = item[1] # y
+        _z[idx] = image[item]
+    end
+    _coord, _z
+end
