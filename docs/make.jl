@@ -17,9 +17,9 @@ makedocs(
         #  checkdocs=:exports,
          remotes=nothing,
          format = Documenter.HTML(;
-                                  repolink="/dir?ci=SpikeTriggered.jl&name=SpikeTriggered.jl",
-                                  disable_git=true,
-                                  edit_link=nothing,
+                                #   repolink="/dir?ci=SpikeTriggered.jl&name=SpikeTriggered.jl",
+                                #   disable_git=true,
+                                #   edit_link=nothing,
                                   prettyurls = get(ENV, "CI", nothing) == "true"
                                  ),
          pages = [
@@ -32,3 +32,9 @@ makedocs(
                "APIs" => "api.md"
          ],
         )
+
+if get(ENV, "CI", nothing) == "true"
+    deploydocs(
+        repo = "github.com/ZaneMuir/SpikeTriggered.jl.git",
+    )
+end
