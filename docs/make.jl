@@ -1,3 +1,5 @@
+using Documenter
+
 if isnothing(get(ENV, "CI", nothing))
    push!(LOAD_PATH, "../src/")
 
@@ -7,24 +9,26 @@ if isnothing(get(ENV, "CI", nothing))
    Pkg.instantiate()
 end
 
-using Documenter, SpikeTriggered
+using SpikeTriggered
 
 makedocs(
          modules = [SpikeTriggered],
          sitename="SpikeTriggered.jl",
-         checkdocs=:exports,
+        #  checkdocs=:exports,
          remotes=nothing,
          format = Documenter.HTML(;
                                   repolink="/dir?ci=SpikeTriggered.jl&name=SpikeTriggered.jl",
                                   disable_git=true,
                                   edit_link=nothing,
+                                  prettyurls = get(ENV, "CI", nothing) == "true"
                                  ),
          pages = [
                "Home" => "index.md",
-               "Raster and PSTH" => "psth.md",
-               "Spike Statistics" => "stats.md",
+               "Spike Statistics" => "spike_stats.md",
+               "Raster and PSTH" => "raster_psth.md",
                "Reverse Correlation" => "reverse_correlation.md",
-               "Forward Correlation" => "forward_correlation.md",
-               "Index" => "func_list.md"
+            #    "Forward Correlation" => "forward_correlation.md",
+                "Spatiotemporal Receptive Field" => "strf.md",
+               "APIs" => "api.md"
          ],
         )

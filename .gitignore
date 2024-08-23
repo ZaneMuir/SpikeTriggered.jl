@@ -5,13 +5,12 @@ Manifest.toml
 dev/
 devs/
 
-readme.md
-
 *.log
 *.so
 *.dylib
 *.dll
 *.*-original
+*.m
 
 .DS_Store
 
